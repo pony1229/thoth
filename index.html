@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>托特塔羅抽牌器</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f5f5f5;
+    }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.2em;
+      text-align: center;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <h1>托特塔羅抽牌器</h1>
+  <button onclick="drawCards()">抽三張牌</button>
+  <div id="result"></div>
+
+  <script>
+    const cards = [
+      // 大秘儀
+      "0 愚者", "I 魔術師", "II 女祭司", "III 皇后", "IV 皇帝", "V 教皇", "VI 戀人",
+      "VII 戰車", "VIII 力量", "IX 隱士", "X 命運之輪", "XI 權杖騎士（調整）",
+      "XII 吊人", "XIII 死神", "XIV 藝術（節制）", "XV 惡魔", "XVI 塔", "XVII 星星",
+      "XVIII 月亮", "XIX 太陽", "XX 生命審判", "XXI 宇宙（世界）",
+
+      // 權杖
+      "權杖王牌", "權杖二（統治）", "權杖三（美德）", "權杖四（完成）", "權杖五（爭鬥）",
+      "權杖六（勝利）", "權杖七（勇氣）", "權杖八（迅速）", "權杖九（力量）", "權杖十（壓力）",
+      "權杖王子", "權杖公主", "權杖女王", "權杖騎士",
+
+      // 聖杯
+      "聖杯王牌", "聖杯二（愛）", "聖杯三（豐盛）", "聖杯四（混亂）", "聖杯五（失望）",
+      "聖杯六（愉悅）", "聖杯七（幻象）", "聖杯八（遺棄）", "聖杯九（幸福）", "聖杯十（飽和）",
+      "聖杯王子", "聖杯公主", "聖杯女王", "聖杯騎士",
+
+      // 寶劍
+      "寶劍王牌", "寶劍二（平衡）", "寶劍三（悲傷）", "寶劍四（休戰）", "寶劍五（失敗）",
+      "寶劍六（科學）", "寶劍七（詭計）", "寶劍八（干涉）", "寶劍九（殘酷）", "寶劍十（毀滅）",
+      "寶劍王子", "寶劍公主", "寶劍女王", "寶劍騎士",
+
+      // 圓盤
+      "圓盤王牌", "圓盤二（變化）", "圓盤三（工作）", "圓盤四（權力）", "圓盤五（貧困）",
+      "圓盤六（成功）", "圓盤七（失衡）", "圓盤八（謹慎）", "圓盤九（收穫）", "圓盤十（財富）",
+      "圓盤王子", "圓盤公主", "圓盤女王", "圓盤騎士"
+    ];
+
+    function drawCards() {
+      const shuffled = [...cards].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, 3);
+      document.getElementById("result").innerText =
+        `抽到的牌是：\n\n1. ${selected[0]}\n2. ${selected[1]}\n3. ${selected[2]}`;
+    }
+  </script>
+</body>
+</html>
