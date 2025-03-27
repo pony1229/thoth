@@ -70,12 +70,20 @@
       gap: 10px;
     }
     #images img {
-      width: calc(100% / 3 - 20px);
-      max-width: 200px;
-      min-width: 180px;
+      width: 200px;
       height: auto;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    @media (max-width: 768px) {
+      #images img {
+        width: 45%;
+      }
+    }
+    @media (max-width: 480px) {
+      #images img {
+        width: 90%;
+      }
     }
     #history {
       margin-top: 30px;
@@ -140,6 +148,7 @@
       "圓盤六（成功）", "圓盤七（失敗）", "圓盤八（謹慎）", "圓盤九（收穫）", "圓盤十（財富）",
       "圓盤王子", "圓盤公主", "圓盤女王", "圓盤騎士"
     ];
+
     let lastResult = "";
     const resultDiv = document.getElementById("result");
     const imagesDiv = document.getElementById("images");
@@ -154,7 +163,11 @@
         selected.map((card, idx) => `${count === 1 ? "" : idx + 1 + ". "}${card}`).join("\n");
 
       resultDiv.innerText = lastResult;
-      imagesDiv.innerHTML = selected.map(card => `<img src="images/thoth/${card}.jpg" alt="${card}">`).join("");
+
+      imagesDiv.innerHTML = selected.map(card => {
+        const imgPath = `images/thoth/${card}.jpg`;
+        return `<img src="${imgPath}" alt="${card}" onerror="this.onerror=null;this.src='images/thoth/預設.jpg';">`;
+      }).join("");
 
       let history = JSON.parse(localStorage.getItem("tarotHistory") || "[]");
       history.unshift(lastResult);
