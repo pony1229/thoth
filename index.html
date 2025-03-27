@@ -70,8 +70,9 @@
       gap: 10px;
     }
     #images img {
-      width: 30%;
+      width: calc(100% / 3 - 20px);
       max-width: 200px;
+      min-width: 180px;
       height: auto;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -99,6 +100,10 @@
       justify-content: flex-end;
       gap: 10px;
     }
+    .history-entry pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
     hr {
       border: 0;
       border-top: 1px solid #3a4a5a;
@@ -109,7 +114,8 @@
 <body>
   <h1>托特塔羅抽牌器</h1>
   <input id="question" placeholder="想問的問題（可空白）">
-  <button onclick="drawCards()">抽三張牌</button>
+  <button onclick="drawCards(3)">抽三張牌</button>
+  <button onclick="drawCards(1)">抽一張牌</button>
   <div id="result"></div>
   <div id="images"></div>
   <button onclick="copyResult()">📋 複製結果</button>
@@ -134,19 +140,18 @@
       "圓盤六（成功）", "圓盤七（失敗）", "圓盤八（謹慎）", "圓盤九（收穫）", "圓盤十（財富）",
       "圓盤王子", "圓盤公主", "圓盤女王", "圓盤騎士"
     ];
-
     let lastResult = "";
     const resultDiv = document.getElementById("result");
     const imagesDiv = document.getElementById("images");
     const historyDiv = document.getElementById("history");
 
-    function drawCards() {
+    function drawCards(count) {
       const question = document.getElementById("question").value.trim();
       const shuffled = [...cards].sort(() => Math.random() - 0.5);
-      const selected = shuffled.slice(0, 3);
+      const selected = shuffled.slice(0, count);
 
-      lastResult = `🎴 抽牌問題：${question || "（未輸入）"}
-\n🃏 抽出的三張牌：\n1. ${selected[0]}\n2. ${selected[1]}\n3. ${selected[2]}`;
+      lastResult = `🎴 抽牌問題：${question || "（未輸入）"}\n\n🃏 抽出的${count === 1 ? "一張牌" : "三張牌"}：\n` +
+        selected.map((card, idx) => `${count === 1 ? "" : idx + 1 + ". "}${card}`).join("\n");
 
       resultDiv.innerText = lastResult;
       imagesDiv.innerHTML = selected.map(card => `<img src="images/thoth/${card}.jpg" alt="${card}">`).join("");
@@ -155,7 +160,6 @@
       history.unshift(lastResult);
       if (history.length > 10) history.pop();
       localStorage.setItem("tarotHistory", JSON.stringify(history));
-
       renderHistory(history);
     }
 
