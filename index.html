@@ -2,38 +2,54 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>托特塔羅抽牌器</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>托特塔羅抽牌器 - 牌陣版</title>
+  <meta name="description" content="使用托特塔羅牌進行各種牌陣：時間之流、聖三角、直指核心、二選一／多選一、聖十字。管理紀錄、分享結果、切換主題與常用問題。">
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: start;
+      justify-content: flex-start;
       padding-top: 40px;
       min-height: 100vh;
+      margin: 0;
       background: linear-gradient(to bottom, #1e2a3a, #2c3e50);
       color: #e0e6ed;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.light-mode {
+      background: linear-gradient(to bottom, #e3eaf2, #f5f9fc);
+      color: #232f45;
     }
     h1 {
-      font-size: 2em;
+      font-size: 2rem;
       margin-bottom: 10px;
       color: #a4c3f0;
     }
-    input {
+    body.light-mode h1 {
+      color: #4a6fa5;
+    }
+    input[type="text"] {
       margin-top: 10px;
       padding: 10px;
-      width: 300px;
-      font-size: 1em;
+      width: 280px;
+      font-size: 1rem;
       border: none;
       border-radius: 6px;
       background: #304258;
       color: #fff;
+      outline: none;
+    }
+    body.light-mode input[type="text"] {
+      background: #dde6f0;
+      color: #232f45;
     }
     button {
       margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 1em;
+      padding: 10px 16px;
+      font-size: 0.95rem;
       border: none;
       border-radius: 6px;
       background-color: #4a6fa5;
@@ -44,16 +60,26 @@
     button:hover {
       background-color: #6c91cc;
     }
+    body.light-mode button {
+      background-color: #6b8bbd;
+    }
+    body.light-mode button:hover {
+      background-color: #8eaadd;
+    }
     .small-btn {
       margin-left: 10px;
       padding: 5px 10px;
-      font-size: 0.85em;
+      font-size: 0.8rem;
       background-color: #3d5679;
       border-radius: 4px;
     }
+    body.light-mode .small-btn {
+      background-color: #9caecc;
+      color: #232f45;
+    }
     #result {
       margin-top: 20px;
-      font-size: 1.2em;
+      font-size: 1rem;
       text-align: center;
       white-space: pre-line;
       background: #273649;
@@ -61,6 +87,11 @@
       border-radius: 10px;
       width: 90%;
       max-width: 700px;
+      color: #e0e6ed;
+    }
+    body.light-mode #result {
+      background: #ffffff;
+      color: #232f45;
     }
     #images {
       margin-top: 10px;
@@ -70,7 +101,7 @@
       gap: 10px;
     }
     #images img {
-      width: 200px;
+      width: 150px;
       height: auto;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -89,18 +120,28 @@
       margin-top: 30px;
       width: 90%;
       max-width: 600px;
-      font-size: 0.95em;
-      color: #ccd6e0;
+      font-size: 0.9rem;
     }
     #history h3 {
       color: #a4c3f0;
+      margin-bottom: 10px;
+    }
+    body.light-mode #history h3 {
+      color: #4a6fa5;
     }
     .history-entry {
       background: #1f2b3a;
       padding: 10px;
       border-radius: 8px;
       margin-bottom: 10px;
-      position: relative;
+    }
+    body.light-mode .history-entry {
+      background: #e8eff7;
+    }
+    .history-entry pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin: 0;
     }
     .history-entry-buttons {
       margin-top: 8px;
@@ -108,28 +149,84 @@
       justify-content: flex-end;
       gap: 10px;
     }
-    .history-entry pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
+    /* Layout for controls and prompts */
+    #controls, #prompts, #spread-select, #spreadDesc {
+      width: 90%;
+      max-width: 700px;
+      margin-top: 20px;
     }
-    hr {
-      border: 0;
-      border-top: 1px solid #3a4a5a;
-      margin: 12px 0;
+    #spread-select {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #spreadDesc {
+      font-size: 0.9rem;
+      white-space: pre-line;
+    }
+    #prompts h3 {
+      margin-bottom: 10px;
+      color: #a4c3f0;
+    }
+    body.light-mode #prompts h3 {
+      color: #4a6fa5;
+    }
+    #promptList {
+      list-style-type: none;
+      padding: 0;
+      margin-bottom: 10px;
+    }
+    #promptList li {
+      margin-bottom: 6px;
+    }
+    #promptList li span {
+      cursor: pointer;
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <h1>托特塔羅抽牌器</h1>
-  <input id="question" placeholder="想問的問題（可空白）">
-  <button onclick="drawCards(3)">抽三張牌</button>
-  <button onclick="drawCards(1)">抽一張牌</button>
-  <div id="result"></div>
+  <h1>🃏 托特塔羅抽牌器</h1>
+  <!-- 問題輸入框 -->
+  <input type="text" id="question" placeholder="輸入你的問題 (可留空)" aria-label="輸入問題">
+  <!-- 牌陣選擇與抽牌按鈕 -->
+  <div id="spread-select">
+    <label for="spread">選擇牌陣：</label>
+    <select id="spread" onchange="updateSpreadDescription()">
+      <option value="flow" selected>三張牌 — 時間之流</option>
+      <option value="trinity">三張牌 — 聖三角</option>
+      <option value="core">四張牌 — 直指核心</option>
+      <option value="decision">五張牌 — 二選一／多選一</option>
+      <option value="celtic">十張牌 — 聖十字</option>
+    </select>
+    <button aria-label="抽牌" onclick="drawSpread()">抽牌</button>
+    <button aria-label="複製結果" onclick="copyResult()">📋 複製結果</button>
+  </div>
+  <!-- 牌陣說明 -->
+  <div id="spreadDesc"></div>
+  <!-- 結果顯示區 -->
+  <div id="result" aria-live="polite"></div>
   <div id="images"></div>
-  <button onclick="copyResult()">📋 複製結果</button>
-  <div id="history"></div>
+  <!-- 抽牌紀錄區 -->
+  <div id="history">
+    <h3>📜 抽牌紀錄：</h3>
+  </div>
+  <!-- 其他控制：主題與分享 -->
+  <div id="controls">
+    <button aria-label="切換主題" onclick="toggleTheme()">🎨 切換主題</button>
+    <button aria-label="分享結果圖片" onclick="shareAsImage()">🖼️ 分享結果圖片</button>
+  </div>
+  <!-- 常用問題管理 -->
+  <div id="prompts">
+    <h3>🔖 常用問題：</h3>
+    <ul id="promptList"></ul>
+    <input type="text" id="newPrompt" placeholder="輸入常用問題..." aria-label="輸入常用問題">
+    <button class="small-btn" aria-label="儲存常用問題" onclick="savePrompt()">＋ 儲存問題</button>
+  </div>
 
   <script>
+    // Tarot card list (Thoth deck, no reversals needed)
     const cards = [
       "0 愚人", "I 魔法師", "II 女祭司", "III 皇后", "IV 皇帝", "V 大祭司",
       "VI 戀人", "VII 戰車", "VIII 調節", "IX 隱者", "X 命運之輪",
@@ -149,26 +246,101 @@
       "圓盤王子", "圓盤公主", "圓盤女王", "圓盤騎士"
     ];
 
+    // Spread definitions
+    const spreads = {
+      flow: {
+        name: "三張牌 — 時間之流",
+        count: 3,
+        labels: ["過去／原因／身", "現在／心／目前結果", "未來／建言／靈"],
+        description: "透過時間的流動來分析問題，第一張代表過去與原因，第二張代表現在的情感與結果，第三張指向未來的建議與靈性指引。"
+      },
+      trinity: {
+        name: "三張牌 — 聖三角",
+        count: 3,
+        labels: ["我以為的狀況", "真實的狀況", "建言"],
+        description: "對照自我感受與現實狀態，第三張提供對應的建言。"
+      },
+      core: {
+        name: "四張牌 — 直指核心",
+        count: 4,
+        labels: ["問題核心", "障礙", "對策", "資源／長處"],
+        description: "聚焦問題核心，評估障礙與資源，並提供對策。"
+      },
+      decision: {
+        name: "五張牌 — 二選一／多選一",
+        count: 5,
+        labels: ["選項A的狀態", "選項B的狀態", "選項A可能的結果", "選項B可能的結果", "當事人的狀態"],
+        description: "比較兩個選項的現況與可能結果，並檢視當事人的狀態。"
+      },
+      celtic: {
+        name: "十張牌 — 聖十字",
+        count: 10,
+        labels: ["現況", "挑戰", "潛在原因", "過去", "可能的未來", "近期的未來", "自身態度", "環境／周圍看法", "希望／恐懼", "最終結果"],
+        description: "經典的十字牌陣，用於全面檢視現況、挑戰、深層原因、過去、未來趨勢、自身與環境的態度以及最終結果。"
+      }
+    };
+
     let lastResult = "";
+    let lastSelectedCards = [];
     const resultDiv = document.getElementById("result");
     const imagesDiv = document.getElementById("images");
     const historyDiv = document.getElementById("history");
+    let savedPrompts = [];
 
-    function drawCards(count) {
+    // Shuffle function
+    function shuffle(array) {
+      const arr = array.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Update spread description
+    function updateSpreadDescription() {
+      const value = document.getElementById('spread').value;
+      const spread = spreads[value];
+      const desc = `${spread.description}\n\n牌位說明：\n` +
+        spread.labels.map((label, idx) => `${idx + 1}. ${label}`).join('\n');
+      document.getElementById('spreadDesc').innerText = desc;
+    }
+
+    // Draw the selected spread
+    function drawSpread() {
+      const selection = document.getElementById('spread').value;
+      const spread = spreads[selection];
+      drawCards(spread.count, spread.labels, spread.name);
+    }
+
+    function drawCards(count, labels = null, spreadName = null) {
       const question = document.getElementById("question").value.trim();
-      const shuffled = [...cards].sort(() => Math.random() - 0.5);
+      const shuffled = shuffle(cards);
       const selected = shuffled.slice(0, count);
+      lastSelectedCards = selected;
 
-      lastResult = `🎴 抽牌問題：${question || "（未輸入）"}\n\n🃏 抽出的${count === 1 ? "一張牌" : "三張牌"}：\n` +
-        selected.map((card, idx) => `${count === 1 ? "" : idx + 1 + ". "}${card}`).join("\n");
-
+      // Build result string
+      let header = `🎴 抽牌問題：${question || "（未輸入）"}`;
+      if (spreadName) {
+        header += `\n牌陣：${spreadName}`;
+      }
+      header += '\n\n';
+      const lines = selected.map((card, idx) => {
+        if (labels) {
+          return `${idx + 1}. ${labels[idx]}：${card}`;
+        }
+        return `${count === 1 ? '' : idx + 1 + '. '}${card}`;
+      });
+      lastResult = header + lines.join('\n');
       resultDiv.innerText = lastResult;
 
       imagesDiv.innerHTML = selected.map(card => {
-        const imgPath = `images/thoth/${card}.jpg`;
+        const fileName = encodeURIComponent(card);
+        const imgPath = `images/thoth/${fileName}.jpg`;
         return `<img src="${imgPath}" alt="${card}" onerror="this.onerror=null;this.src='images/thoth/預設.jpg';">`;
       }).join("");
 
+      // Save to history
       let history = JSON.parse(localStorage.getItem("tarotHistory") || "[]");
       history.unshift(lastResult);
       if (history.length > 10) history.pop();
@@ -177,15 +349,15 @@
     }
 
     function renderHistory(history) {
-      historyDiv.innerHTML = "<h3>📜 抽牌紀錄：</h3>" + history.map((r, i) => `
+      historyDiv.innerHTML = '<h3>📜 抽牌紀錄：</h3>' + history.map((r, i) => `
         <div class="history-entry">
           <pre>${r}</pre>
           <div class="history-entry-buttons">
-            <button class="small-btn" onclick="copyText(${i})">📋 複製</button>
-            <button class="small-btn" onclick="deleteEntry(${i})">🗑️ 刪除</button>
+            <button class="small-btn" aria-label="複製第 ${i + 1} 筆紀錄" onclick="copyText(${i})">📋 複製</button>
+            <button class="small-btn" aria-label="刪除第 ${i + 1} 筆紀錄" onclick="deleteEntry(${i})">🗑️ 刪除</button>
           </div>
         </div>
-      `).join("");
+      `).join('');
     }
 
     function copyText(index) {
@@ -204,9 +376,107 @@
       navigator.clipboard.writeText(lastResult);
     }
 
+    // Theme toggle
+    function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    }
+
+    // Share result as image
+    function shareAsImage() {
+      if (!lastResult) return;
+      const width = 600;
+      const height = 400;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      // background color depends on theme
+      const isLight = document.body.classList.contains('light-mode');
+      ctx.fillStyle = isLight ? '#ffffff' : '#273649';
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = isLight ? '#232f45' : '#e0e6ed';
+      ctx.font = '18px Segoe UI';
+      const lines = lastResult.split('\n');
+      let y = 30;
+      lines.forEach(line => {
+        ctx.fillText(line, 20, y);
+        y += 26;
+      });
+      // draw selected card images
+      const promises = lastSelectedCards.map((card, idx) => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.src = `images/thoth/${encodeURIComponent(card)}.jpg`;
+          img.onload = () => resolve({img, idx});
+          img.onerror = () => resolve(null);
+        });
+      });
+      Promise.all(promises).then(results => {
+        const cardCount = lastSelectedCards.length;
+        const cardWidth = Math.min(100, (width - 40) / cardCount - 10);
+        const yOffset = height - 150;
+        results.forEach((res, i) => {
+          if (res) {
+            const xPos = 20 + i * (cardWidth + 10);
+            ctx.drawImage(res.img, xPos, yOffset, cardWidth, 130);
+          }
+        });
+        const dataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = 'tarot_result.png';
+        link.click();
+      });
+    }
+
+    // Prompt management
+    function loadPrompts() {
+      savedPrompts = JSON.parse(localStorage.getItem('tarotPrompts') || '[]');
+      renderPrompts();
+    }
+
+    function savePrompt() {
+      const input = document.getElementById('newPrompt');
+      const q = input.value.trim();
+      if (q) {
+        savedPrompts.push(q);
+        localStorage.setItem('tarotPrompts', JSON.stringify(savedPrompts));
+        input.value = '';
+        renderPrompts();
+      }
+    }
+
+    function renderPrompts() {
+      const list = savedPrompts.map((q, idx) => `<li><span onclick="setPrompt(${idx})">${q}</span> <button class="small-btn" onclick="deletePrompt(${idx})">刪除</button></li>`).join('');
+      document.getElementById('promptList').innerHTML = list;
+    }
+
+    function setPrompt(idx) {
+      document.getElementById('question').value = savedPrompts[idx];
+    }
+
+    function deletePrompt(idx) {
+      savedPrompts.splice(idx, 1);
+      localStorage.setItem('tarotPrompts', JSON.stringify(savedPrompts));
+      renderPrompts();
+    }
+
+    // Onload: restore history, prompts, theme, and update spread description
     window.onload = () => {
-      const history = JSON.parse(localStorage.getItem("tarotHistory") || "[]");
+      const history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
       if (history.length > 0) renderHistory(history);
+      // restore theme
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+      }
+      // load prompts
+      loadPrompts();
+      // update description
+      updateSpreadDescription();
     }
   </script>
 </body>
