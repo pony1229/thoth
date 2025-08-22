@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>托特塔羅抽牌器 - 牌陣版</title>
+  <title>托特塔羅抽牌器</title>
   <meta name="description" content="使用托特塔羅牌進行各種牌陣：時間之流、聖三角、直指核心、二選一／多選一、聖十字。管理紀錄、分享結果、切換主題與常用問題。">
   <style>
     body {
@@ -149,8 +149,9 @@
       justify-content: flex-end;
       gap: 10px;
     }
-    /* Layout for controls and prompts */
-    #controls, #prompts, #spread-select, #spreadDesc {
+    /* Layout for controls, prompts and descriptions */
+    #spread-select,
+    #spreadDesc {
       width: 90%;
       max-width: 700px;
       margin-top: 20px;
@@ -165,11 +166,16 @@
       font-size: 0.9rem;
       white-space: pre-line;
     }
-    #prompts h3 {
+
+    /* History controls and prompts inside the history section */
+    #history-controls, #history-prompts {
+      margin-top: 20px;
+    }
+    #history-prompts h4 {
       margin-bottom: 10px;
       color: #a4c3f0;
     }
-    body.light-mode #prompts h3 {
+    body.light-mode #history-prompts h4 {
       color: #4a6fa5;
     }
     #promptList {
@@ -194,6 +200,7 @@
   <div id="spread-select">
     <label for="spread">選擇牌陣：</label>
     <select id="spread" onchange="updateSpreadDescription()">
+      <option value="single">單張牌</option>
       <option value="flow" selected>三張牌 — 時間之流</option>
       <option value="trinity">三張牌 — 聖三角</option>
       <option value="core">四張牌 — 直指核心</option>
@@ -202,27 +209,75 @@
     </select>
     <button aria-label="抽牌" onclick="drawSpread()">抽牌</button>
     <button aria-label="複製結果" onclick="copyResult()">📋 複製結果</button>
+      <!-- 重置結果按鈕 -->
+      <button aria-label="清空結果" onclick="resetAll()">🔄 清空結果</button>
   </div>
   <!-- 牌陣說明 -->
   <div id="spreadDesc"></div>
+  <!-- 元素與牌意說明折疊區 -->
+  <details id="elementGuide" style="width:90%;max-width:700px;margin-top:20px;font-size:0.9rem;">
+    <summary>🔍 元素與牌意說明</summary>
+    <h4>四大元素</h4>
+    <ul>
+      <li><strong>水</strong> — 感性、被動、渙散，象徵情感、包容與直覺。水能包容一切，象徵情緒流動與共鳴，缺乏水則缺乏同理心。</li>
+      <li><strong>火</strong> — 感性、主動、集中，象徵意志、行動與熱情。火帶來動力與冒險精神，但過於熾熱可能自我中心、忽略他人。</li>
+      <li><strong>風</strong> — 理性、主動、渙散，象徵思考、溝通與挑戰。風帶來智慧與變化，思考不清或溝通不良則容易造成誤解或傷害。</li>
+      <li><strong>土</strong> — 理性、被動、集中，象徵物質、實際與安全感。土代表穩固與現實，過度則可能固執、停滯。</li>
+    </ul>
+    <h4>牌組與元素</h4>
+    <ul>
+      <li><strong>權杖</strong> — 屬<strong>意志</strong>，主<strong>行動</strong>，對應<strong>火</strong>元素。</li>
+      <li><strong>聖杯</strong> — 屬<strong>感情</strong>，主<strong>關係、直覺、情感</strong>，對應<strong>水</strong>元素。</li>
+      <li><strong>寶劍</strong> — 屬<strong>信念</strong>，主<strong>衝突、挑戰、思考</strong>，對應<strong>風</strong>元素。</li>
+      <li><strong>圓盤</strong> — 屬<strong>感官</strong>，主<strong>物質、錢財、自然</strong>，對應<strong>土</strong>元素。</li>
+    </ul>
+    <h4>宮廷牌元素</h4>
+    <ul>
+      <li><strong>皇后</strong> — <strong>水</strong>元素，象徵創造力與成果。</li>
+      <li><strong>騎士</strong> — <strong>火</strong>元素，象徵過程與進展。</li>
+      <li><strong>王子</strong> — <strong>風</strong>元素，象徵學習與開端。</li>
+      <li><strong>公主</strong> — <strong>土</strong>元素，象徵成果與成功。</li>
+    </ul>
+    <h4>陰性與陽性</h4>
+    <p><strong>陽性</strong>代表主動、外向、太陽的能量；<strong>陰性</strong>代表被動、內向、月亮的能量。元素的主動或被動特質會影響牌意的表現，例如水與土屬於陰性，火與風屬於陽性。</p>
+  </details>
+
+  <!-- 牌陣比較與用途 -->
+  <details id="spreadComparison" style="width:90%;max-width:700px;margin-top:20px;font-size:0.9rem;">
+    <summary>📘 牌陣比較與用途</summary>
+    <p>本牌陣比較總結每個牌陣的目的與適用情境：</p>
+    <ul>
+      <li><strong>單張牌</strong> — 適合日常簡易的提問或靜心抽牌，迅速得到指引。</li>
+      <li><strong>時間之流</strong> — 分析過去的原因、現在的狀態與未來的建議。</li>
+      <li><strong>聖三角</strong> — 比較自身認知與現實差異，並獲得改善建議。</li>
+      <li><strong>直指核心</strong> — 針對問題核心、障礙、資源提出策略與行動方案。</li>
+      <li><strong>二選一／多選一</strong> — 比較兩個選項的現況與可能後果，並檢視當事人的影響。</li>
+      <li><strong>聖十字</strong> — 全方位檢視問題，包括現況、挑戰、深層原因、過去、未來、自身與環境態度，以及最終結果。</li>
+    </ul>
+  </details>
   <!-- 結果顯示區 -->
   <div id="result" aria-live="polite"></div>
   <div id="images"></div>
-  <!-- 抽牌紀錄區 -->
+  <!-- 抽牌紀錄區與附加功能 -->
   <div id="history">
+    <!-- 控制按鈕與常用問題放在最上方 -->
+    <div id="history-controls">
+      <button aria-label="切換主題" onclick="toggleTheme()">🎨 切換主題</button>
+      <button aria-label="分享結果圖片" onclick="shareAsImage()">🖼️ 分享結果圖片</button>
+      <!-- 清空歷史紀錄 -->
+      <button aria-label="清空歷史紀錄" onclick="clearHistory()">🧹 清空紀錄</button>
+      <!-- 下載歷史紀錄 -->
+      <button aria-label="下載歷史紀錄" onclick="downloadHistory()">💾 下載紀錄</button>
+    </div>
+    <div id="history-prompts">
+      <h4>🔖 常用問題：</h4>
+      <ul id="promptList"></ul>
+      <input type="text" id="newPrompt" placeholder="輸入常用問題..." aria-label="輸入常用問題">
+      <button class="small-btn" aria-label="儲存常用問題" onclick="savePrompt()">＋ 儲存問題</button>
+    </div>
     <h3>📜 抽牌紀錄：</h3>
-  </div>
-  <!-- 其他控制：主題與分享 -->
-  <div id="controls">
-    <button aria-label="切換主題" onclick="toggleTheme()">🎨 切換主題</button>
-    <button aria-label="分享結果圖片" onclick="shareAsImage()">🖼️ 分享結果圖片</button>
-  </div>
-  <!-- 常用問題管理 -->
-  <div id="prompts">
-    <h3>🔖 常用問題：</h3>
-    <ul id="promptList"></ul>
-    <input type="text" id="newPrompt" placeholder="輸入常用問題..." aria-label="輸入常用問題">
-    <button class="small-btn" aria-label="儲存常用問題" onclick="savePrompt()">＋ 儲存問題</button>
+    <!-- 歷史列表會在 JS 中填充 -->
+    <div id="historyList"></div>
   </div>
 
   <script>
@@ -246,8 +301,97 @@
       "圓盤王子", "圓盤公主", "圓盤女王", "圓盤騎士"
     ];
 
+    // Card information mapping: meaning and element for each Thoth card
+    // Source: thoth_tarot_full.json, using the "- 關鍵字" as meaning and "- 元素" as element
+    const cardInfo = {
+      "0 愚人": { meaning: "無限潛能、純真、啟程", element: "風（Air）" },
+      "I 魔法師": { meaning: "創造、意志、掌握元素", element: "風（Air）" },
+      "II 女祭司": { meaning: "潛意識、神祕直覺、沉靜之門", element: "水（Water）" },
+      "XIII 死神": { meaning: "轉變、終結、重生", element: "水（Water）" },
+      "XV 惡魔": { meaning: "慾望、束縛、陰影", element: "土（Earth）" },
+      "III 皇后": { meaning: "豐饒、母性、創造", element: "土（Earth）" },
+      "IV 皇帝": { meaning: "結構、秩序、陽性力量", element: "火（Fire）" },
+      "V 大祭司": { meaning: "信仰、儀式、傳統智慧", element: "土（Earth）" },
+      "VI 戀人": { meaning: "選擇、結合、內在整合", element: "風（Air）" },
+      "VII 戰車": { meaning: "意志的勝利、前進、掌控", element: "水（Water）" },
+      "VIII 調節": { meaning: "平衡、公正、因果律、靈性調整", element: "風（Air）" },
+      "IX 隱士": { meaning: "內省、智慧、孤獨旅程", element: "地（Earth）" },
+      "X 命運之輪": { meaning: "命運、週期、轉變", element: "火（Fire）" },
+      "XI 慾望": { meaning: "內在勇氣、柔性力量、掌握本能", element: "火（Fire）" },
+      "XII 吊人": { meaning: "犧牲、轉變視角、靈性懸浮", element: "水（Water）" },
+      "XIV 藝術": { meaning: "融合、鍊金、節制之道", element: "火（Fire）" },
+      "XVI 塔": { meaning: "破壞、覺醒、突變", element: "火（Fire）" },
+      "XVII 星星": { meaning: "希望、靈性之光、平靜", element: "風（Air）" },
+      "XVIII 月亮": { meaning: "幻象、潛意識、迷霧", element: "水（Water）" },
+      "XIX 太陽": { meaning: "成功、覺醒、喜悅", element: "火（Fire）" },
+      "XX 新紀元": { meaning: "覺醒、救贖、召喚", element: "火（Fire）" },
+      "XXI 宇宙": { meaning: "整合、成就、合一", element: "土（Earth）" },
+      "權杖王牌": { meaning: "創造力、新的開始、原始能量", element: "火（Fire）" },
+      "權杖二（統治）": { meaning: "權威、自信、意志展現", element: "火（Fire）" },
+      "權杖三（美德）": { meaning: "遠見、正直、道德的堅持", element: "火（Fire）" },
+      "權杖四（完成）": { meaning: "穩定、慶祝、創造的完成", element: "火（Fire）" },
+      "權杖五（爭鬥）": { meaning: "挑戰、衝突、競爭", element: "火（Fire）" },
+      "權杖六（勝利）": { meaning: "成功、榮耀、他人認可", element: "火（Fire）" },
+      "權杖七（勇氣）": { meaning: "防衛、堅持立場、奮力一搏", element: "火（Fire）" },
+      "權杖八（迅速）": { meaning: "快速發展、訊息、能量流動", element: "火（Fire）" },
+      "權杖九（力量）": { meaning: "韌性、防禦、界限", element: "火（Fire）" },
+      "權杖十（壓力）": { meaning: "過度負荷、疲憊、壓抑", element: "火（Fire）" },
+      "權杖王子": { meaning: "激情、冒險、衝動、自信", element: "火（Fire）" },
+      "權杖公主": { meaning: "純真、創造本能、革新能量", element: "火（Fire）" },
+      "權杖女王": { meaning: "魅力、領導、靈感啟發", element: "火（Fire）" },
+      "權杖騎士": { meaning: "主動、領導、衝動、靈感實踐", element: "火（Fire）" },
+      "聖杯王牌": { meaning: "情感開端、愛的種子、靈性泉源", element: "水（Water）" },
+      "聖杯二（愛）": { meaning: "連結、愛情、靈魂伴侶", element: "水（Water）" },
+      "聖杯三（豐盛）": { meaning: "慶祝、友情、情感分享", element: "水（Water）" },
+      "聖杯四（混亂）": { meaning: "情感停滯、冷淡、內在封閉", element: "水（Water）" },
+      "聖杯五（失望）": { meaning: "哀傷、失落、情緒爆發", element: "水（Water）" },
+      "聖杯六（愉悅）": { meaning: "回憶、童心、美好片段", element: "水（Water）" },
+      "聖杯七（幻象）": { meaning: "迷惘、誘惑、情感過剩", element: "水（Water）" },
+      "聖杯八（怠惰）": { meaning: "情感枯竭、逃避、無力感、停滯", element: "水（Water）" },
+      "聖杯九（幸福）": { meaning: "滿足、成就、內在喜悅", element: "水（Water）" },
+      "聖杯十（飽和）": { meaning: "圓滿、家庭、情感充盈", element: "水（Water）" },
+      "聖杯王子": { meaning: "浪漫、夢想、內省、理想化", element: "水（Water）" },
+      "聖杯公主": { meaning: "直覺、純真、靈性訊息", element: "水（Water）" },
+      "聖杯女王": { meaning: "深情、包容、療癒、自我沉潛", element: "水（Water）" },
+      "聖杯騎士": { meaning: "靈性追尋者、詩人、情感旅人", element: "水（Water）" },
+      "寶劍王牌": { meaning: "思考的開始、清晰、意識覺醒", element: "風（Air）" },
+      "寶劍二（平衡）": { meaning: "理性平衡、寧靜、暫時和諧", element: "風（Air）" },
+      "寶劍三（悲傷）": { meaning: "心痛、分離、情緒創傷", element: "風（Air）" },
+      "寶劍四（休戰）": { meaning: "休息、內省、恢復", element: "風（Air）" },
+      "寶劍五（擊潰）": { meaning: "擊潰、自尊受創、崩解、不值得的勝利", element: "風（Air）" },
+      "寶劍六（科學）": { meaning: "理性前進、知識整合、系統性", element: "風（Air）" },
+      "寶劍七（詭計）": { meaning: "欺瞞、謀略、逃避真相", element: "風（Air）" },
+      "寶劍八（干涉）": { meaning: "限制、束縛、過度思考", element: "風（Air）" },
+      "寶劍九（殘酷）": { meaning: "極端痛苦、內心折磨、焦慮", element: "風（Air）" },
+      "寶劍十（毀滅）": { meaning: "終結、思想崩潰、再無退路", element: "風（Air）" },
+      "寶劍王子": { meaning: "聰明、反叛、辯證、觀念碰撞", element: "風（Air）" },
+      "寶劍公主": { meaning: "洞察、分析、學習、好奇心", element: "風（Air）" },
+      "寶劍女王": { meaning: "洞察真相、決斷力、冷靜的慈悲", element: "風（Air）" },
+      "寶劍騎士": { meaning: "快速行動、語言攻勢、知識戰士", element: "風（Air）" },
+      "圓盤王牌": { meaning: "物質起點、穩固、潛力的實現", element: "土（Earth）" },
+      "圓盤二（變化）": { meaning: "變動中的穩定、靈活、現實適應力", element: "土（Earth）" },
+      "圓盤三（工作）": { meaning: "合作、努力、有形成果", element: "土（Earth）" },
+      "圓盤四（權力）": { meaning: "控制、資源累積、秩序", element: "土（Earth）" },
+      "圓盤五（憂慮）": { meaning: "焦慮、不穩、過度分析、對未來的不安", element: "土（Earth）" },
+      "圓盤六（成功）": { meaning: "均衡給予、物質調和、分享", element: "土（Earth）" },
+      "圓盤七（失敗）": { meaning: "失敗、徒勞、錯誤的堅持、無果的努力", element: "土（Earth）" },
+      "圓盤八（謹慎）": { meaning: "紀律、專注、精進", element: "土（Earth）" },
+      "圓盤九（收穫）": { meaning: "成果、內在安全感、享受", element: "土（Earth）" },
+      "圓盤十（財富）": { meaning: "圓滿、世俗成就、物質傳承", element: "土（Earth）" },
+      "圓盤王子": { meaning: "實踐型思考者、計劃、慢速成就", element: "土（Earth）" },
+      "圓盤公主": { meaning: "孕育、潛力、實體世界的守門人", element: "土（Earth）" },
+      "圓盤女王": { meaning: "滋養、照料、物質與感受的融合", element: "土（Earth）" },
+      "圓盤騎士": { meaning: "執行者、穩健前進、物質化意志", element: "土（Earth）" }
+    };
+
     // Spread definitions
     const spreads = {
+      single: {
+        name: "單張牌",
+        count: 1,
+        labels: ["答案"],
+        description: "抽一張牌，適合日常簡單詢問或靜心指引。"
+      },
       flow: {
         name: "三張牌 — 時間之流",
         count: 3,
@@ -285,6 +429,8 @@
     const resultDiv = document.getElementById("result");
     const imagesDiv = document.getElementById("images");
     const historyDiv = document.getElementById("history");
+    // Container for the dynamic history entries list
+    const historyListEl = document.getElementById("historyList");
     let savedPrompts = [];
 
     // Shuffle function
@@ -325,11 +471,17 @@
         header += `\n牌陣：${spreadName}`;
       }
       header += '\n\n';
+      // Build each line with card name, meaning and element
       const lines = selected.map((card, idx) => {
+        const info = cardInfo[card] || {};
+        const meaning = info.meaning || '';
+        const element = info.element || '';
         if (labels) {
-          return `${idx + 1}. ${labels[idx]}：${card}`;
+          return `${idx + 1}. ${labels[idx]}：${card} — ${meaning}（${element}）`;
         }
-        return `${count === 1 ? '' : idx + 1 + '. '}${card}`;
+        // For single-card or unnamed spreads
+        const prefix = count === 1 ? '' : `${idx + 1}. `;
+        return `${prefix}${card} — ${meaning}（${element}）`;
       });
       lastResult = header + lines.join('\n');
       resultDiv.innerText = lastResult;
@@ -339,6 +491,28 @@
         const imgPath = `images/thoth/${fileName}.jpg`;
         return `<img src="${imgPath}" alt="${card}" onerror="this.onerror=null;this.src='images/thoth/預設.jpg';">`;
       }).join("");
+      // 根據牌數調整頁面上牌圖排版
+      if (count === 10) {
+        // 使用grid將聖十字的十張牌分成兩排五張，置中排列
+        imagesDiv.style.display = 'grid';
+        imagesDiv.style.gridTemplateColumns = 'repeat(5, 1fr)';
+        imagesDiv.style.justifyItems = 'center';
+        const imgs = imagesDiv.querySelectorAll('img');
+        imgs.forEach(img => {
+          img.style.width = '110px';
+          img.style.height = 'auto';
+        });
+      } else {
+        // 其他牌陣恢復flex排版
+        imagesDiv.style.display = 'flex';
+        imagesDiv.style.gridTemplateColumns = '';
+        imagesDiv.style.justifyItems = '';
+        const imgs = imagesDiv.querySelectorAll('img');
+        imgs.forEach(img => {
+          img.style.width = '';
+          img.style.height = '';
+        });
+      }
 
       // Save to history
       let history = JSON.parse(localStorage.getItem("tarotHistory") || "[]");
@@ -349,7 +523,8 @@
     }
 
     function renderHistory(history) {
-      historyDiv.innerHTML = '<h3>📜 抽牌紀錄：</h3>' + history.map((r, i) => `
+      // Populate only the history list, keep header and controls untouched
+      historyListEl.innerHTML = history.map((r, i) => `
         <div class="history-entry">
           <pre>${r}</pre>
           <div class="history-entry-buttons">
@@ -386,50 +561,123 @@
     // Share result as image
     function shareAsImage() {
       if (!lastResult) return;
-      const width = 600;
-      const height = 400;
+      // 計算文字行數與高度
+      const lines = lastResult.split('\n');
+      const lineHeight = 22;
+      const textHeight = lines.length * lineHeight + 20;
+      const rows = lastSelectedCards.length > 5 ? 2 : 1;
+      const isCeltic = lastSelectedCards.length === 10;
+      const baseCardHeight = isCeltic ? 160 : 130;
+      const height = Math.max(400, textHeight + rows * baseCardHeight + 30);
+      const width = isCeltic ? 800 : 600;
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
-      // background color depends on theme
+      // 背景漸層
       const isLight = document.body.classList.contains('light-mode');
-      ctx.fillStyle = isLight ? '#ffffff' : '#273649';
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      if (isLight) {
+        gradient.addColorStop(0, '#ffffff');
+        gradient.addColorStop(1, '#dde6f0');
+      } else {
+        gradient.addColorStop(0, '#273649');
+        gradient.addColorStop(1, '#1f2b3a');
+      }
+      ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
       ctx.fillStyle = isLight ? '#232f45' : '#e0e6ed';
-      ctx.font = '18px Segoe UI';
-      const lines = lastResult.split('\n');
+      ctx.font = '16px Segoe UI';
+      // 繪製文字水平置中
       let y = 30;
       lines.forEach(line => {
-        ctx.fillText(line, 20, y);
-        y += 26;
+        const textWidth = ctx.measureText(line).width;
+        const x = (width - textWidth) / 2;
+        ctx.fillText(line, x, y);
+        y += lineHeight;
       });
-      // draw selected card images
-      const promises = lastSelectedCards.map((card, idx) => {
-        return new Promise((resolve) => {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.src = `images/thoth/${encodeURIComponent(card)}.jpg`;
-          img.onload = () => resolve({img, idx});
-          img.onerror = () => resolve(null);
-        });
-      });
-      Promise.all(promises).then(results => {
-        const cardCount = lastSelectedCards.length;
-        const cardWidth = Math.min(100, (width - 40) / cardCount - 10);
-        const yOffset = height - 150;
-        results.forEach((res, i) => {
-          if (res) {
-            const xPos = 20 + i * (cardWidth + 10);
-            ctx.drawImage(res.img, xPos, yOffset, cardWidth, 130);
-          }
-        });
+      // 載入牌面圖片
+      const promises = lastSelectedCards.map(card => new Promise(resolve => {
+        const img = new Image();
+        img.src = 'images/thoth/' + encodeURIComponent(card) + '.jpg';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+      }));
+      Promise.all(promises).then(imgs => {
+        const count = lastSelectedCards.length;
+        if (rows === 2) {
+          const perRow = (count === 10) ? 5 : Math.ceil(count / 2);
+          const baseCardWidth = isCeltic ? 100 : 80;
+          // 上排
+          const cardWidthTop = Math.min(baseCardWidth, (width - 40) / perRow - 8);
+          const totalTopWidth = perRow * cardWidthTop + (perRow - 1) * 8;
+          const xStartTop = (width - totalTopWidth) / 2;
+          const yTop = height - baseCardHeight * 2 - 10;
+          // 下排
+          const remaining = count - perRow;
+          const cardWidthBottom = Math.min(baseCardWidth, (width - 40) / remaining - 8);
+          const totalBottomWidth = remaining * cardWidthBottom + (remaining - 1) * 8;
+          const xStartBottom = (width - totalBottomWidth) / 2;
+          const yBottom = height - baseCardHeight - 10;
+          imgs.forEach((img, i) => {
+            if (!img) return;
+            if (i < perRow) {
+              const xPos = xStartTop + i * (cardWidthTop + 8);
+              ctx.drawImage(img, xPos, yTop, cardWidthTop, baseCardHeight);
+            } else {
+              const j = i - perRow;
+              const xPos = xStartBottom + j * (cardWidthBottom + 8);
+              ctx.drawImage(img, xPos, yBottom, cardWidthBottom, baseCardHeight);
+            }
+          });
+        } else {
+          const baseCardWidth = isCeltic ? 100 : 80;
+          const cardWidth = Math.min(baseCardWidth, (width - 40) / count - 8);
+          const totalWidth = count * cardWidth + (count - 1) * 8;
+          const xStart = (width - totalWidth) / 2;
+          const yOffset = height - baseCardHeight - 10;
+          imgs.forEach((img, i) => {
+            if (!img) return;
+            const xPos = xStart + i * (cardWidth + 8);
+            ctx.drawImage(img, xPos, yOffset, cardWidth, baseCardHeight);
+          });
+        }
+        // 匯出圖檔
         const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.href = dataUrl;
         link.download = 'tarot_result.png';
         link.click();
       });
+    }
+
+    // 重置輸入與結果
+    function resetAll() {
+      document.getElementById('question').value = '';
+      lastResult = '';
+      lastSelectedCards = [];
+      resultDiv.innerText = '';
+      imagesDiv.innerHTML = '';
+    }
+
+    // 清空歷史紀錄
+    function clearHistory() {
+      localStorage.removeItem('tarotHistory');
+      renderHistory([]);
+    }
+
+    // 下載歷史紀錄
+    function downloadHistory() {
+      const history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
+      if (!history.length) return;
+      const content = history.join('\n\n---\n\n');
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tarot_history.txt';
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     // Prompt management
