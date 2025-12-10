@@ -6,196 +6,640 @@
   <title>托特塔羅抽牌器</title>
   <meta name="description" content="使用托特塔羅牌進行各種牌陣：時間之流、聖三角、直指核心、二選一／多選一、聖十字。管理紀錄、分享結果、切換主題與常用問題。">
   <style>
+    /* CSS 變數統一管理主題色彩 */
+    :root {
+      --bg-gradient-start: #1e2a3a;
+      --bg-gradient-end: #2c3e50;
+      --text-primary: #e0e6ed;
+      --text-secondary: #a4c3f0;
+      --card-bg: #273649;
+      --input-bg: #304258;
+      --btn-primary: #4a6fa5;
+      --btn-hover: #6c91cc;
+      --btn-small: #3d5679;
+      --history-bg: #1f2b3a;
+      --shadow-color: rgba(0,0,0,0.3);
+      --card-back: linear-gradient(135deg, #2c3e50 0%, #4a6fa5 50%, #2c3e50 100%);
+      --modal-overlay: rgba(0,0,0,0.8);
+    }
+
+    body.light-mode {
+      --bg-gradient-start: #e3eaf2;
+      --bg-gradient-end: #f5f9fc;
+      --text-primary: #232f45;
+      --text-secondary: #4a6fa5;
+      --card-bg: #ffffff;
+      --input-bg: #dde6f0;
+      --btn-primary: #6b8bbd;
+      --btn-hover: #8eaadd;
+      --btn-small: #9caecc;
+      --history-bg: #e8eff7;
+      --shadow-color: rgba(0,0,0,0.15);
+      --card-back: linear-gradient(135deg, #6b8bbd 0%, #a4c3f0 50%, #6b8bbd 100%);
+      --modal-overlay: rgba(255,255,255,0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: "Segoe UI", sans-serif;
+      font-family: "Segoe UI", "Noto Sans TC", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding-top: 40px;
+      padding: 40px 15px;
       min-height: 100vh;
       margin: 0;
-      background: linear-gradient(to bottom, #1e2a3a, #2c3e50);
-      color: #e0e6ed;
+      background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
+      color: var(--text-primary);
       transition: background 0.3s, color 0.3s;
     }
-    body.light-mode {
-      background: linear-gradient(to bottom, #e3eaf2, #f5f9fc);
-      color: #232f45;
-    }
+
     h1 {
       font-size: 2rem;
       margin-bottom: 10px;
-      color: #a4c3f0;
+      color: var(--text-secondary);
+      text-shadow: 0 2px 4px var(--shadow-color);
     }
-    body.light-mode h1 {
-      color: #4a6fa5;
-    }
+
+    /* 輸入框樣式 */
     input[type="text"] {
       margin-top: 10px;
-      padding: 10px;
-      width: 280px;
+      padding: 12px 16px;
+      width: 300px;
+      max-width: 90vw;
       font-size: 1rem;
-      border: none;
-      border-radius: 6px;
-      background: #304258;
-      color: #fff;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text-primary);
       outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
-    body.light-mode input[type="text"] {
-      background: #dde6f0;
-      color: #232f45;
+
+    input[type="text"]:focus {
+      border-color: var(--btn-primary);
+      box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
     }
-    button {
-      margin-top: 10px;
-      padding: 10px 16px;
+
+    input[type="text"]::placeholder {
+      color: var(--text-primary);
+      opacity: 0.6;
+    }
+
+    /* 選擇框樣式 */
+    select {
+      padding: 10px 14px;
       font-size: 0.95rem;
       border: none;
       border-radius: 6px;
-      background-color: #4a6fa5;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* 按鈕樣式 */
+    button {
+      margin-top: 10px;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--btn-primary);
       color: white;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px var(--shadow-color);
     }
+
     button:hover {
-      background-color: #6c91cc;
+      background: var(--btn-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow-color);
     }
-    body.light-mode button {
-      background-color: #6b8bbd;
+
+    button:active {
+      transform: translateY(0);
     }
-    body.light-mode button:hover {
-      background-color: #8eaadd;
-    }
+
     .small-btn {
-      margin-left: 10px;
-      padding: 5px 10px;
+      margin-left: 8px;
+      padding: 6px 12px;
       font-size: 0.8rem;
-      background-color: #3d5679;
-      border-radius: 4px;
+      background: var(--btn-small);
+      border-radius: 5px;
+      box-shadow: none;
     }
-    body.light-mode .small-btn {
-      background-color: #9caecc;
-      color: #232f45;
+
+    .small-btn:hover {
+      transform: none;
+      box-shadow: none;
+      opacity: 0.9;
     }
+
+    /* 主要抽牌按鈕特殊樣式 */
+    .btn-draw {
+      background: linear-gradient(135deg, #4a6fa5, #6c91cc);
+      font-size: 1.1rem;
+      padding: 12px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-draw::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-draw:hover::before {
+      left: 100%;
+    }
+
+    /* 結果區域 */
     #result {
-      margin-top: 20px;
+      margin-top: 25px;
       font-size: 1rem;
       text-align: center;
       white-space: pre-line;
-      background: #273649;
-      padding: 15px;
-      border-radius: 10px;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
       width: 90%;
       max-width: 700px;
-      color: #e0e6ed;
+      color: var(--text-primary);
+      box-shadow: 0 4px 20px var(--shadow-color);
+      line-height: 1.6;
+      min-height: 60px;
     }
-    body.light-mode #result {
-      background: #ffffff;
-      color: #232f45;
-    }
+
+    /* 牌面圖片區域 */
     #images {
-      margin-top: 10px;
+      margin-top: 20px;
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
+      gap: 15px;
+      perspective: 1000px;
+    }
+
+    /* 牌面卡片容器 */
+    .card-container {
+      position: relative;
+      width: 120px;
+      height: 180px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .card-container:hover {
+      transform: scale(1.05);
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .card-container.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px var(--shadow-color);
+    }
+
+    .card-front {
+      transform: rotateY(180deg);
+    }
+
+    .card-front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    .card-back {
+      background: var(--card-back);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid var(--text-secondary);
+    }
+
+    .card-back::before {
+      content: '🌙';
+      font-size: 2.5rem;
+      opacity: 0.8;
+    }
+
+    .card-label {
+      position: absolute;
+      bottom: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      text-align: center;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 聖十字牌陣特殊佈局 */
+    #images.celtic-layout {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-template-rows: repeat(4, 150px);
       gap: 10px;
+      justify-content: center;
+      width: auto;
+      max-width: 500px;
     }
-    #images img {
-      width: 150px;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+
+    #images.celtic-layout .card-container {
+      width: 90px;
+      height: 135px;
     }
+
+    /* 聖十字位置定義 */
+    #images.celtic-layout .celtic-1 { grid-column: 2; grid-row: 2; }
+    #images.celtic-layout .celtic-2 { grid-column: 2; grid-row: 2; transform: rotate(90deg) scale(0.85); z-index: 1; }
+    #images.celtic-layout .celtic-3 { grid-column: 2; grid-row: 3; }
+    #images.celtic-layout .celtic-4 { grid-column: 1; grid-row: 2; }
+    #images.celtic-layout .celtic-5 { grid-column: 2; grid-row: 1; }
+    #images.celtic-layout .celtic-6 { grid-column: 3; grid-row: 2; }
+    #images.celtic-layout .celtic-7 { grid-column: 4; grid-row: 4; }
+    #images.celtic-layout .celtic-8 { grid-column: 4; grid-row: 3; }
+    #images.celtic-layout .celtic-9 { grid-column: 4; grid-row: 2; }
+    #images.celtic-layout .celtic-10 { grid-column: 4; grid-row: 1; }
+
+    /* 響應式調整 */
     @media (max-width: 768px) {
-      #images img {
-        width: 45%;
+      .card-container {
+        width: 100px;
+        height: 150px;
+      }
+
+      #images.celtic-layout {
+        grid-template-columns: repeat(4, 80px);
+        grid-template-rows: repeat(4, 120px);
+      }
+
+      #images.celtic-layout .card-container {
+        width: 72px;
+        height: 108px;
       }
     }
+
     @media (max-width: 480px) {
-      #images img {
-        width: 90%;
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .card-container {
+        width: 85px;
+        height: 127px;
+      }
+
+      #images.celtic-layout {
+        grid-template-columns: repeat(4, 65px);
+        grid-template-rows: repeat(4, 98px);
+      }
+
+      #images.celtic-layout .card-container {
+        width: 58px;
+        height: 87px;
+      }
+
+      .card-label {
+        font-size: 0.65rem;
+        bottom: -22px;
       }
     }
+
+    /* 歷史紀錄區 */
     #history {
-      margin-top: 30px;
+      margin-top: 40px;
       width: 90%;
-      max-width: 600px;
+      max-width: 650px;
       font-size: 0.9rem;
     }
+
     #history h3 {
-      color: #a4c3f0;
-      margin-bottom: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+      font-size: 1.1rem;
     }
-    body.light-mode #history h3 {
-      color: #4a6fa5;
-    }
+
     .history-entry {
-      background: #1f2b3a;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      background: var(--history-bg);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 10px var(--shadow-color);
+      transition: transform 0.2s;
     }
-    body.light-mode .history-entry {
-      background: #e8eff7;
+
+    .history-entry:hover {
+      transform: translateX(5px);
     }
+
     .history-entry pre {
       white-space: pre-wrap;
       word-wrap: break-word;
       margin: 0;
+      line-height: 1.5;
     }
+
     .history-entry-buttons {
-      margin-top: 8px;
+      margin-top: 10px;
       display: flex;
       justify-content: flex-end;
-      gap: 10px;
+      gap: 8px;
     }
-    /* Layout for controls, prompts and descriptions */
-    #spread-select,
-    #spreadDesc {
+
+    /* 控制區佈局 */
+    #spread-select {
       width: 90%;
       max-width: 700px;
       margin-top: 20px;
-    }
-    #spread-select {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
-    }
-    #spreadDesc {
-      font-size: 0.9rem;
-      white-space: pre-line;
+      justify-content: center;
     }
 
-    /* History controls and prompts inside the history section */
-    #history-controls, #history-prompts {
+    #spreadDesc {
+      width: 90%;
+      max-width: 700px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+      white-space: pre-line;
+      text-align: center;
+      opacity: 0.85;
+    }
+
+    /* 歷史控制與常用問題 */
+    #history-controls {
       margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
     }
+
+    #history-prompts {
+      margin-top: 25px;
+      padding: 20px;
+      background: var(--history-bg);
+      border-radius: 10px;
+    }
+
     #history-prompts h4 {
-      margin-bottom: 10px;
-      color: #a4c3f0;
+      margin: 0 0 15px 0;
+      color: var(--text-secondary);
     }
-    body.light-mode #history-prompts h4 {
-      color: #4a6fa5;
-    }
+
     #promptList {
       list-style-type: none;
       padding: 0;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
+
     #promptList li {
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+
     #promptList li span {
       cursor: pointer;
       text-decoration: underline;
+      flex: 1;
+      transition: color 0.2s;
+    }
+
+    #promptList li span:hover {
+      color: var(--text-secondary);
+    }
+
+    /* 詳情折疊區 */
+    details {
+      width: 90%;
+      max-width: 700px;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      background: var(--history-bg);
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--text-secondary);
+      padding: 5px 0;
+    }
+
+    details[open] summary {
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--btn-small);
+      padding-bottom: 10px;
+    }
+
+    details h4 {
+      color: var(--text-secondary);
+      margin: 15px 0 10px 0;
+    }
+
+    details ul {
+      padding-left: 20px;
+      line-height: 1.8;
+    }
+
+    /* 牌義詳情彈窗 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--modal-overlay);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--btn-small);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 1.3rem;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-primary);
+      padding: 5px;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    .modal-close:hover {
+      color: var(--text-secondary);
+      background: transparent;
+      transform: none;
+    }
+
+    .modal-body {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .modal-card-image {
+      width: 150px;
+      height: 225px;
+      border-radius: 10px;
+      object-fit: cover;
+      box-shadow: 0 4px 15px var(--shadow-color);
+    }
+
+    .modal-card-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .modal-card-info p {
+      margin: 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal-card-info .label {
+      color: var(--text-secondary);
+      font-weight: bold;
+    }
+
+    .element-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-top: 5px;
+    }
+
+    .element-fire { background: rgba(255, 87, 34, 0.3); color: #ff7043; }
+    .element-water { background: rgba(33, 150, 243, 0.3); color: #64b5f6; }
+    .element-air { background: rgba(255, 235, 59, 0.3); color: #ffd54f; }
+    .element-earth { background: rgba(76, 175, 80, 0.3); color: #81c784; }
+
+    /* 載入動畫 */
+    .loading-spinner {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--btn-small);
+      border-top-color: var(--text-secondary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    .loading-spinner.active {
+      display: block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast 通知 */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--btn-primary);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px var(--shadow-color);
+      transition: transform 0.3s ease;
+      z-index: 1001;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
 <body>
   <h1>🃏 托特塔羅抽牌器</h1>
+
   <!-- 問題輸入框 -->
-  <input type="text" id="question" placeholder="輸入你的問題 (可留空)" aria-label="輸入問題">
+  <input type="text" id="question" placeholder="輸入你的問題（可留空）" aria-label="輸入問題">
+
   <!-- 牌陣選擇與抽牌按鈕 -->
   <div id="spread-select">
     <label for="spread">選擇牌陣：</label>
@@ -207,45 +651,43 @@
       <option value="decision">五張牌 — 二選一／多選一</option>
       <option value="celtic">十張牌 — 聖十字</option>
     </select>
-    <button aria-label="抽牌" onclick="drawSpread()">抽牌</button>
-    <button aria-label="複製結果" onclick="copyResult()">📋 複製結果</button>
-      <!-- 重置結果按鈕 -->
-      <button aria-label="清空結果" onclick="resetAll()">🔄 清空結果</button>
+    <button class="btn-draw" aria-label="抽牌" onclick="drawSpread()">✨ 抽牌</button>
+    <button aria-label="複製結果" onclick="copyResult()">📋 複製</button>
+    <button aria-label="清空結果" onclick="resetAll()">🔄 清空</button>
   </div>
+
   <!-- 牌陣說明 -->
   <div id="spreadDesc"></div>
+
   <!-- 元素與牌意說明折疊區 -->
-  <details id="elementGuide" style="width:90%;max-width:700px;margin-top:20px;font-size:0.9rem;">
+  <details id="elementGuide">
     <summary>🔍 元素與牌意說明</summary>
     <h4>四大元素</h4>
     <ul>
-      <li><strong>水</strong> — 感性、被動、渙散，象徵情感、包容與直覺。水能包容一切，象徵情緒流動與共鳴，缺乏水則缺乏同理心。</li>
-      <li><strong>火</strong> — 感性、主動、集中，象徵意志、行動與熱情。火帶來動力與冒險精神，但過於熾熱可能自我中心、忽略他人。</li>
-      <li><strong>風</strong> — 理性、主動、渙散，象徵思考、溝通與挑戰。風帶來智慧與變化，思考不清或溝通不良則容易造成誤解或傷害。</li>
-      <li><strong>土</strong> — 理性、被動、集中，象徵物質、實際與安全感。土代表穩固與現實，過度則可能固執、停滯。</li>
+      <li><strong>🔥 火</strong> — 感性、主動、集中，象徵意志、行動與熱情。火帶來動力與冒險精神，但過於熾熱可能自我中心、忽略他人。</li>
+      <li><strong>💧 水</strong> — 感性、被動、渙散，象徵情感、包容與直覺。水能包容一切，象徵情緒流動與共鳴，缺乏水則缺乏同理心。</li>
+      <li><strong>🌬️ 風</strong> — 理性、主動、渙散，象徵思考、溝通與挑戰。風帶來智慧與變化，思考不清或溝通不良則容易造成誤解或傷害。</li>
+      <li><strong>🌍 土</strong> — 理性、被動、集中，象徵物質、實際與安全感。土代表穩固與現實，過度則可能固執、停滯。</li>
     </ul>
     <h4>牌組與元素</h4>
     <ul>
-      <li><strong>權杖</strong> — 屬<strong>意志</strong>，主<strong>行動</strong>，對應<strong>火</strong>元素。</li>
-      <li><strong>聖杯</strong> — 屬<strong>感情</strong>，主<strong>關係、直覺、情感</strong>，對應<strong>水</strong>元素。</li>
-      <li><strong>寶劍</strong> — 屬<strong>信念</strong>，主<strong>衝突、挑戰、思考</strong>，對應<strong>風</strong>元素。</li>
-      <li><strong>圓盤</strong> — 屬<strong>感官</strong>，主<strong>物質、錢財、自然</strong>，對應<strong>土</strong>元素。</li>
+      <li><strong>權杖</strong> — 屬<strong>意志</strong>，主<strong>行動</strong>，對應<strong>🔥 火</strong>元素。</li>
+      <li><strong>聖杯</strong> — 屬<strong>感情</strong>，主<strong>關係、直覺、情感</strong>，對應<strong>💧 水</strong>元素。</li>
+      <li><strong>寶劍</strong> — 屬<strong>信念</strong>，主<strong>衝突、挑戰、思考</strong>，對應<strong>🌬️ 風</strong>元素。</li>
+      <li><strong>圓盤</strong> — 屬<strong>感官</strong>，主<strong>物質、錢財、自然</strong>，對應<strong>🌍 土</strong>元素。</li>
     </ul>
     <h4>宮廷牌元素</h4>
     <ul>
-      <li><strong>皇后</strong> — <strong>水</strong>元素，象徵創造力與成果。</li>
-      <li><strong>騎士</strong> — <strong>火</strong>元素，象徵過程與進展。</li>
-      <li><strong>王子</strong> — <strong>風</strong>元素，象徵學習與開端。</li>
-      <li><strong>公主</strong> — <strong>土</strong>元素，象徵成果與成功。</li>
+      <li><strong>騎士</strong> — <strong>🔥 火</strong>元素，象徵主動與領導。</li>
+      <li><strong>女王</strong> — <strong>💧 水</strong>元素，象徵創造力與成果。</li>
+      <li><strong>王子</strong> — <strong>🌬️ 風</strong>元素，象徵學習與開端。</li>
+      <li><strong>公主</strong> — <strong>🌍 土</strong>元素，象徵成果與實現。</li>
     </ul>
-    <h4>陰性與陽性</h4>
-    <p><strong>陽性</strong>代表主動、外向、太陽的能量；<strong>陰性</strong>代表被動、內向、月亮的能量。元素的主動或被動特質會影響牌意的表現，例如水與土屬於陰性，火與風屬於陽性。</p>
   </details>
 
   <!-- 牌陣比較與用途 -->
-  <details id="spreadComparison" style="width:90%;max-width:700px;margin-top:20px;font-size:0.9rem;">
+  <details id="spreadComparison">
     <summary>📘 牌陣比較與用途</summary>
-    <p>本牌陣比較總結每個牌陣的目的與適用情境：</p>
     <ul>
       <li><strong>單張牌</strong> — 適合日常簡易的提問或靜心抽牌，迅速得到指引。</li>
       <li><strong>時間之流</strong> — 分析過去的原因、現在的狀態與未來的建議。</li>
@@ -255,33 +697,57 @@
       <li><strong>聖十字</strong> — 全方位檢視問題，包括現況、挑戰、深層原因、過去、未來、自身與環境態度，以及最終結果。</li>
     </ul>
   </details>
+
+  <!-- 載入動畫 -->
+  <div class="loading-spinner" id="loadingSpinner"></div>
+
   <!-- 結果顯示區 -->
   <div id="result" aria-live="polite"></div>
   <div id="images"></div>
+
   <!-- 抽牌紀錄區與附加功能 -->
   <div id="history">
-    <!-- 控制按鈕與常用問題放在最上方 -->
     <div id="history-controls">
       <button aria-label="切換主題" onclick="toggleTheme()">🎨 切換主題</button>
-      <button aria-label="分享結果圖片" onclick="shareAsImage()">🖼️ 分享結果圖片</button>
-      <!-- 清空歷史紀錄 -->
+      <button aria-label="分享結果圖片" onclick="shareAsImage()">🖼️ 分享圖片</button>
       <button aria-label="清空歷史紀錄" onclick="clearHistory()">🧹 清空紀錄</button>
-      <!-- 下載歷史紀錄 -->
       <button aria-label="下載歷史紀錄" onclick="downloadHistory()">💾 下載紀錄</button>
     </div>
     <div id="history-prompts">
-      <h4>🔖 常用問題：</h4>
+      <h4>🔖 常用問題</h4>
       <ul id="promptList"></ul>
-      <input type="text" id="newPrompt" placeholder="輸入常用問題..." aria-label="輸入常用問題">
-      <button class="small-btn" aria-label="儲存常用問題" onclick="savePrompt()">＋ 儲存問題</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="text" id="newPrompt" placeholder="輸入常用問題..." aria-label="輸入常用問題" style="flex:1;min-width:200px;">
+        <button class="small-btn" aria-label="儲存常用問題" onclick="savePrompt()">＋ 儲存</button>
+      </div>
     </div>
-    <h3>📜 抽牌紀錄：</h3>
-    <!-- 歷史列表會在 JS 中填充 -->
+    <h3>📜 抽牌紀錄</h3>
     <div id="historyList"></div>
   </div>
 
+  <!-- 牌義詳情彈窗 -->
+  <div class="modal-overlay" id="cardModal" onclick="closeModalOnOverlay(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="modalCardName">牌名</h2>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img class="modal-card-image" id="modalCardImage" src="" alt="">
+        <div class="modal-card-info">
+          <p><span class="label">位置：</span><span id="modalPosition">-</span></p>
+          <p><span class="label">關鍵字：</span><span id="modalMeaning">-</span></p>
+          <p><span class="label">元素：</span><span id="modalElement" class="element-badge">-</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 通知 -->
+  <div class="toast" id="toast"></div>
+
   <script>
-    // Tarot card list (Thoth deck, no reversals needed)
+    // 塔羅牌牌庫
     const cards = [
       "0 愚人", "I 魔法師", "II 女祭司", "III 皇后", "IV 皇帝", "V 大祭司",
       "VI 戀人", "VII 戰車", "VIII 調節", "IX 隱者", "X 命運之輪",
@@ -301,90 +767,89 @@
       "圓盤王子", "圓盤公主", "圓盤女王", "圓盤騎士"
     ];
 
-    // Card information mapping: meaning and element for each Thoth card
-    // Source: thoth_tarot_full.json, using the "- 關鍵字" as meaning and "- 元素" as element
+    // 牌義與元素資訊
     const cardInfo = {
-      "0 愚人": { meaning: "無限潛能、純真、啟程", element: "風（Air）" },
-      "I 魔法師": { meaning: "創造、意志、掌握元素", element: "風（Air）" },
-      "II 女祭司": { meaning: "潛意識、神祕直覺、沉靜之門", element: "水（Water）" },
-      "XIII 死神": { meaning: "轉變、終結、重生", element: "水（Water）" },
-      "XV 惡魔": { meaning: "慾望、束縛、陰影", element: "土（Earth）" },
-      "III 皇后": { meaning: "豐饒、母性、創造", element: "土（Earth）" },
-      "IV 皇帝": { meaning: "結構、秩序、陽性力量", element: "火（Fire）" },
-      "V 大祭司": { meaning: "信仰、儀式、傳統智慧", element: "土（Earth）" },
-      "VI 戀人": { meaning: "選擇、結合、內在整合", element: "風（Air）" },
-      "VII 戰車": { meaning: "意志的勝利、前進、掌控", element: "水（Water）" },
-      "VIII 調節": { meaning: "平衡、公正、因果律、靈性調整", element: "風（Air）" },
-      "IX 隱士": { meaning: "內省、智慧、孤獨旅程", element: "地（Earth）" },
-      "X 命運之輪": { meaning: "命運、週期、轉變", element: "火（Fire）" },
-      "XI 慾望": { meaning: "內在勇氣、柔性力量、掌握本能", element: "火（Fire）" },
-      "XII 吊人": { meaning: "犧牲、轉變視角、靈性懸浮", element: "水（Water）" },
-      "XIV 藝術": { meaning: "融合、鍊金、節制之道", element: "火（Fire）" },
-      "XVI 塔": { meaning: "破壞、覺醒、突變", element: "火（Fire）" },
-      "XVII 星星": { meaning: "希望、靈性之光、平靜", element: "風（Air）" },
-      "XVIII 月亮": { meaning: "幻象、潛意識、迷霧", element: "水（Water）" },
-      "XIX 太陽": { meaning: "成功、覺醒、喜悅", element: "火（Fire）" },
-      "XX 新紀元": { meaning: "覺醒、救贖、召喚", element: "火（Fire）" },
-      "XXI 宇宙": { meaning: "整合、成就、合一", element: "土（Earth）" },
-      "權杖王牌": { meaning: "創造力、新的開始、原始能量", element: "火（Fire）" },
-      "權杖二（統治）": { meaning: "權威、自信、意志展現", element: "火（Fire）" },
-      "權杖三（美德）": { meaning: "遠見、正直、道德的堅持", element: "火（Fire）" },
-      "權杖四（完成）": { meaning: "穩定、慶祝、創造的完成", element: "火（Fire）" },
-      "權杖五（爭鬥）": { meaning: "挑戰、衝突、競爭", element: "火（Fire）" },
-      "權杖六（勝利）": { meaning: "成功、榮耀、他人認可", element: "火（Fire）" },
-      "權杖七（勇氣）": { meaning: "防衛、堅持立場、奮力一搏", element: "火（Fire）" },
-      "權杖八（迅速）": { meaning: "快速發展、訊息、能量流動", element: "火（Fire）" },
-      "權杖九（力量）": { meaning: "韌性、防禦、界限", element: "火（Fire）" },
-      "權杖十（壓力）": { meaning: "過度負荷、疲憊、壓抑", element: "火（Fire）" },
-      "權杖王子": { meaning: "激情、冒險、衝動、自信", element: "火（Fire）" },
-      "權杖公主": { meaning: "純真、創造本能、革新能量", element: "火（Fire）" },
-      "權杖女王": { meaning: "魅力、領導、靈感啟發", element: "火（Fire）" },
-      "權杖騎士": { meaning: "主動、領導、衝動、靈感實踐", element: "火（Fire）" },
-      "聖杯王牌": { meaning: "情感開端、愛的種子、靈性泉源", element: "水（Water）" },
-      "聖杯二（愛）": { meaning: "連結、愛情、靈魂伴侶", element: "水（Water）" },
-      "聖杯三（豐盛）": { meaning: "慶祝、友情、情感分享", element: "水（Water）" },
-      "聖杯四（混亂）": { meaning: "情感停滯、冷淡、內在封閉", element: "水（Water）" },
-      "聖杯五（失望）": { meaning: "哀傷、失落、情緒爆發", element: "水（Water）" },
-      "聖杯六（愉悅）": { meaning: "回憶、童心、美好片段", element: "水（Water）" },
-      "聖杯七（幻象）": { meaning: "迷惘、誘惑、情感過剩", element: "水（Water）" },
-      "聖杯八（怠惰）": { meaning: "情感枯竭、逃避、無力感、停滯", element: "水（Water）" },
-      "聖杯九（幸福）": { meaning: "滿足、成就、內在喜悅", element: "水（Water）" },
-      "聖杯十（飽和）": { meaning: "圓滿、家庭、情感充盈", element: "水（Water）" },
-      "聖杯王子": { meaning: "浪漫、夢想、內省、理想化", element: "水（Water）" },
-      "聖杯公主": { meaning: "直覺、純真、靈性訊息", element: "水（Water）" },
-      "聖杯女王": { meaning: "深情、包容、療癒、自我沉潛", element: "水（Water）" },
-      "聖杯騎士": { meaning: "靈性追尋者、詩人、情感旅人", element: "水（Water）" },
-      "寶劍王牌": { meaning: "思考的開始、清晰、意識覺醒", element: "風（Air）" },
-      "寶劍二（平衡）": { meaning: "理性平衡、寧靜、暫時和諧", element: "風（Air）" },
-      "寶劍三（悲傷）": { meaning: "心痛、分離、情緒創傷", element: "風（Air）" },
-      "寶劍四（休戰）": { meaning: "休息、內省、恢復", element: "風（Air）" },
-      "寶劍五（擊潰）": { meaning: "擊潰、自尊受創、崩解、不值得的勝利", element: "風（Air）" },
-      "寶劍六（科學）": { meaning: "理性前進、知識整合、系統性", element: "風（Air）" },
-      "寶劍七（詭計）": { meaning: "欺瞞、謀略、逃避真相", element: "風（Air）" },
-      "寶劍八（干涉）": { meaning: "限制、束縛、過度思考", element: "風（Air）" },
-      "寶劍九（殘酷）": { meaning: "極端痛苦、內心折磨、焦慮", element: "風（Air）" },
-      "寶劍十（毀滅）": { meaning: "終結、思想崩潰、再無退路", element: "風（Air）" },
-      "寶劍王子": { meaning: "聰明、反叛、辯證、觀念碰撞", element: "風（Air）" },
-      "寶劍公主": { meaning: "洞察、分析、學習、好奇心", element: "風（Air）" },
-      "寶劍女王": { meaning: "洞察真相、決斷力、冷靜的慈悲", element: "風（Air）" },
-      "寶劍騎士": { meaning: "快速行動、語言攻勢、知識戰士", element: "風（Air）" },
-      "圓盤王牌": { meaning: "物質起點、穩固、潛力的實現", element: "土（Earth）" },
-      "圓盤二（變化）": { meaning: "變動中的穩定、靈活、現實適應力", element: "土（Earth）" },
-      "圓盤三（工作）": { meaning: "合作、努力、有形成果", element: "土（Earth）" },
-      "圓盤四（權力）": { meaning: "控制、資源累積、秩序", element: "土（Earth）" },
-      "圓盤五（憂慮）": { meaning: "焦慮、不穩、過度分析、對未來的不安", element: "土（Earth）" },
-      "圓盤六（成功）": { meaning: "均衡給予、物質調和、分享", element: "土（Earth）" },
-      "圓盤七（失敗）": { meaning: "失敗、徒勞、錯誤的堅持、無果的努力", element: "土（Earth）" },
-      "圓盤八（謹慎）": { meaning: "紀律、專注、精進", element: "土（Earth）" },
-      "圓盤九（收穫）": { meaning: "成果、內在安全感、享受", element: "土（Earth）" },
-      "圓盤十（財富）": { meaning: "圓滿、世俗成就、物質傳承", element: "土（Earth）" },
-      "圓盤王子": { meaning: "實踐型思考者、計劃、慢速成就", element: "土（Earth）" },
-      "圓盤公主": { meaning: "孕育、潛力、實體世界的守門人", element: "土（Earth）" },
-      "圓盤女王": { meaning: "滋養、照料、物質與感受的融合", element: "土（Earth）" },
-      "圓盤騎士": { meaning: "執行者、穩健前進、物質化意志", element: "土（Earth）" }
+      "0 愚人": { meaning: "無限潛能、純真、啟程", element: "風" },
+      "I 魔法師": { meaning: "創造、意志、掌握元素", element: "風" },
+      "II 女祭司": { meaning: "潛意識、神祕直覺、沉靜之門", element: "水" },
+      "XIII 死神": { meaning: "轉變、終結、重生", element: "水" },
+      "XV 惡魔": { meaning: "慾望、束縛、陰影", element: "土" },
+      "III 皇后": { meaning: "豐饒、母性、創造", element: "土" },
+      "IV 皇帝": { meaning: "結構、秩序、陽性力量", element: "火" },
+      "V 大祭司": { meaning: "信仰、儀式、傳統智慧", element: "土" },
+      "VI 戀人": { meaning: "選擇、結合、內在整合", element: "風" },
+      "VII 戰車": { meaning: "意志的勝利、前進、掌控", element: "水" },
+      "VIII 調節": { meaning: "平衡、公正、因果律、靈性調整", element: "風" },
+      "IX 隱者": { meaning: "內省、智慧、孤獨旅程", element: "土" },
+      "X 命運之輪": { meaning: "命運、週期、轉變", element: "火" },
+      "XI 慾望": { meaning: "內在勇氣、柔性力量、掌握本能", element: "火" },
+      "XII 吊人": { meaning: "犧牲、轉變視角、靈性懸浮", element: "水" },
+      "XIV 藝術": { meaning: "融合、鍊金、節制之道", element: "火" },
+      "XVI 塔": { meaning: "破壞、覺醒、突變", element: "火" },
+      "XVII 星星": { meaning: "希望、靈性之光、平靜", element: "風" },
+      "XVIII 月亮": { meaning: "幻象、潛意識、迷霧", element: "水" },
+      "XIX 太陽": { meaning: "成功、覺醒、喜悅", element: "火" },
+      "XX 新紀元": { meaning: "覺醒、救贖、召喚", element: "火" },
+      "XXI 宇宙": { meaning: "整合、成就、合一", element: "土" },
+      "權杖王牌": { meaning: "創造力、新的開始、原始能量", element: "火" },
+      "權杖二（統治）": { meaning: "權威、自信、意志展現", element: "火" },
+      "權杖三（美德）": { meaning: "遠見、正直、道德的堅持", element: "火" },
+      "權杖四（完成）": { meaning: "穩定、慶祝、創造的完成", element: "火" },
+      "權杖五（爭鬥）": { meaning: "挑戰、衝突、競爭", element: "火" },
+      "權杖六（勝利）": { meaning: "成功、榮耀、他人認可", element: "火" },
+      "權杖七（勇氣）": { meaning: "防衛、堅持立場、奮力一搏", element: "火" },
+      "權杖八（迅速）": { meaning: "快速發展、訊息、能量流動", element: "火" },
+      "權杖九（力量）": { meaning: "韌性、防禦、界限", element: "火" },
+      "權杖十（壓力）": { meaning: "過度負荷、疲憊、壓抑", element: "火" },
+      "權杖王子": { meaning: "激情、冒險、衝動、自信", element: "火" },
+      "權杖公主": { meaning: "純真、創造本能、革新能量", element: "火" },
+      "權杖女王": { meaning: "魅力、領導、靈感啟發", element: "火" },
+      "權杖騎士": { meaning: "主動、領導、衝動、靈感實踐", element: "火" },
+      "聖杯王牌": { meaning: "情感開端、愛的種子、靈性泉源", element: "水" },
+      "聖杯二（愛）": { meaning: "連結、愛情、靈魂伴侶", element: "水" },
+      "聖杯三（豐盛）": { meaning: "慶祝、友情、情感分享", element: "水" },
+      "聖杯四（混亂）": { meaning: "情感停滯、冷淡、內在封閉", element: "水" },
+      "聖杯五（失望）": { meaning: "哀傷、失落、情緒爆發", element: "水" },
+      "聖杯六（愉悅）": { meaning: "回憶、童心、美好片段", element: "水" },
+      "聖杯七（幻象）": { meaning: "迷惘、誘惑、情感過剩", element: "水" },
+      "聖杯八（怠惰）": { meaning: "情感枯竭、逃避、無力感、停滯", element: "水" },
+      "聖杯九（幸福）": { meaning: "滿足、成就、內在喜悅", element: "水" },
+      "聖杯十（飽和）": { meaning: "圓滿、家庭、情感充盈", element: "水" },
+      "聖杯王子": { meaning: "浪漫、夢想、內省、理想化", element: "水" },
+      "聖杯公主": { meaning: "直覺、純真、靈性訊息", element: "水" },
+      "聖杯女王": { meaning: "深情、包容、療癒、自我沉潛", element: "水" },
+      "聖杯騎士": { meaning: "靈性追尋者、詩人、情感旅人", element: "水" },
+      "寶劍王牌": { meaning: "思考的開始、清晰、意識覺醒", element: "風" },
+      "寶劍二（平衡）": { meaning: "理性平衡、寧靜、暫時和諧", element: "風" },
+      "寶劍三（悲傷）": { meaning: "心痛、分離、情緒創傷", element: "風" },
+      "寶劍四（休戰）": { meaning: "休息、內省、恢復", element: "風" },
+      "寶劍五（擊潰）": { meaning: "擊潰、自尊受創、崩解、不值得的勝利", element: "風" },
+      "寶劍六（科學）": { meaning: "理性前進、知識整合、系統性", element: "風" },
+      "寶劍七（詭計）": { meaning: "欺瞞、謀略、逃避真相", element: "風" },
+      "寶劍八（干涉）": { meaning: "限制、束縛、過度思考", element: "風" },
+      "寶劍九（殘酷）": { meaning: "極端痛苦、內心折磨、焦慮", element: "風" },
+      "寶劍十（毀滅）": { meaning: "終結、思想崩潰、再無退路", element: "風" },
+      "寶劍王子": { meaning: "聰明、反叛、辯證、觀念碰撞", element: "風" },
+      "寶劍公主": { meaning: "洞察、分析、學習、好奇心", element: "風" },
+      "寶劍女王": { meaning: "洞察真相、決斷力、冷靜的慈悲", element: "風" },
+      "寶劍騎士": { meaning: "快速行動、語言攻勢、知識戰士", element: "風" },
+      "圓盤王牌": { meaning: "物質起點、穩固、潛力的實現", element: "土" },
+      "圓盤二（變化）": { meaning: "變動中的穩定、靈活、現實適應力", element: "土" },
+      "圓盤三（工作）": { meaning: "合作、努力、有形成果", element: "土" },
+      "圓盤四（權力）": { meaning: "控制、資源累積、秩序", element: "土" },
+      "圓盤五（憂慮）": { meaning: "焦慮、不穩、過度分析、對未來的不安", element: "土" },
+      "圓盤六（成功）": { meaning: "均衡給予、物質調和、分享", element: "土" },
+      "圓盤七（失敗）": { meaning: "失敗、徒勞、錯誤的堅持、無果的努力", element: "土" },
+      "圓盤八（謹慎）": { meaning: "紀律、專注、精進", element: "土" },
+      "圓盤九（收穫）": { meaning: "成果、內在安全感、享受", element: "土" },
+      "圓盤十（財富）": { meaning: "圓滿、世俗成就、物質傳承", element: "土" },
+      "圓盤王子": { meaning: "實踐型思考者、計劃、慢速成就", element: "土" },
+      "圓盤公主": { meaning: "孕育、潛力、實體世界的守門人", element: "土" },
+      "圓盤女王": { meaning: "滋養、照料、物質與感受的融合", element: "土" },
+      "圓盤騎士": { meaning: "執行者、穩健前進、物質化意志", element: "土" }
     };
 
-    // Spread definitions
+    // 牌陣定義
     const spreads = {
       single: {
         name: "單張牌",
@@ -395,7 +860,7 @@
       flow: {
         name: "三張牌 — 時間之流",
         count: 3,
-        labels: ["過去／原因／身", "現在／心／目前結果", "未來／建言／靈"],
+        labels: ["過去／原因", "現在／狀態", "未來／建言"],
         description: "透過時間的流動來分析問題，第一張代表過去與原因，第二張代表現在的情感與結果，第三張指向未來的建議與靈性指引。"
       },
       trinity: {
@@ -413,27 +878,30 @@
       decision: {
         name: "五張牌 — 二選一／多選一",
         count: 5,
-        labels: ["選項A的狀態", "選項B的狀態", "選項A可能的結果", "選項B可能的結果", "當事人的狀態"],
+        labels: ["選項A狀態", "選項B狀態", "選項A結果", "選項B結果", "當事人狀態"],
         description: "比較兩個選項的現況與可能結果，並檢視當事人的狀態。"
       },
       celtic: {
         name: "十張牌 — 聖十字",
         count: 10,
-        labels: ["現況", "挑戰", "潛在原因", "過去", "可能的未來", "近期的未來", "自身態度", "環境／周圍看法", "希望／恐懼", "最終結果"],
+        labels: ["現況", "挑戰", "潛在原因", "過去", "可能未來", "近期未來", "自身態度", "環境看法", "希望／恐懼", "最終結果"],
         description: "經典的十字牌陣，用於全面檢視現況、挑戰、深層原因、過去、未來趨勢、自身與環境的態度以及最終結果。"
       }
     };
 
+    // 狀態變數
     let lastResult = "";
     let lastSelectedCards = [];
-    const resultDiv = document.getElementById("result");
-    const imagesDiv = document.getElementById("images");
-    const historyDiv = document.getElementById("history");
-    // Container for the dynamic history entries list
-    const historyListEl = document.getElementById("historyList");
+    let lastLabels = [];
     let savedPrompts = [];
 
-    // Shuffle function
+    // DOM 元素
+    const resultDiv = document.getElementById("result");
+    const imagesDiv = document.getElementById("images");
+    const historyListEl = document.getElementById("historyList");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+
+    // Fisher-Yates 洗牌算法
     function shuffle(array) {
       const arr = array.slice();
       for (let i = arr.length - 1; i > 0; i--) {
@@ -443,78 +911,107 @@
       return arr;
     }
 
-    // Update spread description
+    // 更新牌陣說明
     function updateSpreadDescription() {
       const value = document.getElementById('spread').value;
       const spread = spreads[value];
-      const desc = `${spread.description}\n\n牌位說明：\n` +
-        spread.labels.map((label, idx) => `${idx + 1}. ${label}`).join('\n');
+      const desc = `${spread.description}\n\n牌位：${spread.labels.map((l, i) => `${i+1}.${l}`).join(' → ')}`;
       document.getElementById('spreadDesc').innerText = desc;
     }
 
-    // Draw the selected spread
+    // 獲取元素對應的CSS類
+    function getElementClass(element) {
+      if (element.includes('火')) return 'element-fire';
+      if (element.includes('水')) return 'element-water';
+      if (element.includes('風')) return 'element-air';
+      if (element.includes('土') || element.includes('地')) return 'element-earth';
+      return '';
+    }
+
+    // 獲取元素的 emoji
+    function getElementEmoji(element) {
+      if (element.includes('火')) return '🔥';
+      if (element.includes('水')) return '💧';
+      if (element.includes('風')) return '🌬️';
+      if (element.includes('土') || element.includes('地')) return '🌍';
+      return '✨';
+    }
+
+    // 顯示 Toast 通知
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // 抽牌
     function drawSpread() {
       const selection = document.getElementById('spread').value;
       const spread = spreads[selection];
-      drawCards(spread.count, spread.labels, spread.name);
+      drawCards(spread.count, spread.labels, spread.name, selection === 'celtic');
     }
 
-    function drawCards(count, labels = null, spreadName = null) {
+    function drawCards(count, labels, spreadName, isCeltic = false) {
       const question = document.getElementById("question").value.trim();
       const shuffled = shuffle(cards);
       const selected = shuffled.slice(0, count);
       lastSelectedCards = selected;
+      lastLabels = labels;
 
-      // Build result string
+      // 建立結果文字
       let header = `🎴 抽牌問題：${question || "（未輸入）"}`;
-      if (spreadName) {
-        header += `\n牌陣：${spreadName}`;
-      }
+      if (spreadName) header += `\n牌陣：${spreadName}`;
       header += '\n\n';
-      // Build each line with card name, meaning and element
+
       const lines = selected.map((card, idx) => {
         const info = cardInfo[card] || {};
         const meaning = info.meaning || '';
         const element = info.element || '';
+        const emoji = getElementEmoji(element);
         if (labels) {
-          return `${idx + 1}. ${labels[idx]}：${card} — ${meaning}（${element}）`;
+          return `${idx + 1}. ${labels[idx]}：${card}\n   ${emoji} ${element} — ${meaning}`;
         }
-        // For single-card or unnamed spreads
-        const prefix = count === 1 ? '' : `${idx + 1}. `;
-        return `${prefix}${card} — ${meaning}（${element}）`;
+        return `${card}\n   ${emoji} ${element} — ${meaning}`;
       });
-      lastResult = header + lines.join('\n');
+      lastResult = header + lines.join('\n\n');
       resultDiv.innerText = lastResult;
 
-      imagesDiv.innerHTML = selected.map(card => {
-        const fileName = encodeURIComponent(card);
-        const imgPath = `images/thoth/${fileName}.jpg`;
-        return `<img src="${imgPath}" alt="${card}" onerror="this.onerror=null;this.src='images/thoth/預設.jpg';">`;
-      }).join("");
-      // 根據牌數調整頁面上牌圖排版
-      if (count === 10) {
-        // 使用grid將聖十字的十張牌分成兩排五張，置中排列
-        imagesDiv.style.display = 'grid';
-        imagesDiv.style.gridTemplateColumns = 'repeat(5, 1fr)';
-        imagesDiv.style.justifyItems = 'center';
-        const imgs = imagesDiv.querySelectorAll('img');
-        imgs.forEach(img => {
-          img.style.width = '110px';
-          img.style.height = 'auto';
-        });
+      // 設定牌面佈局
+      if (isCeltic) {
+        imagesDiv.className = 'celtic-layout';
       } else {
-        // 其他牌陣恢復flex排版
-        imagesDiv.style.display = 'flex';
-        imagesDiv.style.gridTemplateColumns = '';
-        imagesDiv.style.justifyItems = '';
-        const imgs = imagesDiv.querySelectorAll('img');
-        imgs.forEach(img => {
-          img.style.width = '';
-          img.style.height = '';
-        });
+        imagesDiv.className = '';
       }
 
-      // Save to history
+      // 建立牌面卡片（帶翻牌動畫）
+      imagesDiv.innerHTML = selected.map((card, idx) => {
+        const fileName = encodeURIComponent(card);
+        const imgPath = `images/thoth/${fileName}.jpg`;
+        const posClass = isCeltic ? `celtic-${idx + 1}` : '';
+        const labelText = labels ? labels[idx] : '';
+        return `
+          <div class="card-container ${posClass}" onclick="showCardDetail(${idx})" style="animation-delay: ${idx * 0.15}s">
+            <div class="card-inner">
+              <div class="card-back"></div>
+              <div class="card-front">
+                <img src="${imgPath}" alt="${card}" onerror="this.src='images/thoth/預設.jpg';">
+              </div>
+            </div>
+            ${labelText ? `<div class="card-label">${labelText}</div>` : ''}
+          </div>
+        `;
+      }).join("");
+
+      // 依序翻牌動畫
+      const containers = imagesDiv.querySelectorAll('.card-container');
+      containers.forEach((container, idx) => {
+        setTimeout(() => {
+          container.classList.add('flipped');
+        }, 300 + idx * 250);
+      });
+
+      // 儲存到歷史紀錄
       let history = JSON.parse(localStorage.getItem("tarotHistory") || "[]");
       history.unshift(lastResult);
       if (history.length > 10) history.pop();
@@ -522,14 +1019,43 @@
       renderHistory(history);
     }
 
+    // 顯示牌義詳情
+    function showCardDetail(idx) {
+      const card = lastSelectedCards[idx];
+      const info = cardInfo[card] || {};
+      const label = lastLabels ? lastLabels[idx] : '';
+
+      document.getElementById('modalCardName').textContent = card;
+      document.getElementById('modalCardImage').src = `images/thoth/${encodeURIComponent(card)}.jpg`;
+      document.getElementById('modalCardImage').alt = card;
+      document.getElementById('modalPosition').textContent = label || '單張抽牌';
+      document.getElementById('modalMeaning').textContent = info.meaning || '—';
+
+      const elementEl = document.getElementById('modalElement');
+      elementEl.textContent = `${getElementEmoji(info.element || '')} ${info.element || '—'}`;
+      elementEl.className = `element-badge ${getElementClass(info.element || '')}`;
+
+      document.getElementById('cardModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('cardModal').classList.remove('active');
+    }
+
+    function closeModalOnOverlay(event) {
+      if (event.target === document.getElementById('cardModal')) {
+        closeModal();
+      }
+    }
+
+    // 渲染歷史紀錄
     function renderHistory(history) {
-      // Populate only the history list, keep header and controls untouched
       historyListEl.innerHTML = history.map((r, i) => `
         <div class="history-entry">
           <pre>${r}</pre>
           <div class="history-entry-buttons">
-            <button class="small-btn" aria-label="複製第 ${i + 1} 筆紀錄" onclick="copyText(${i})">📋 複製</button>
-            <button class="small-btn" aria-label="刪除第 ${i + 1} 筆紀錄" onclick="deleteEntry(${i})">🗑️ 刪除</button>
+            <button class="small-btn" onclick="copyText(${i})">📋 複製</button>
+            <button class="small-btn" onclick="deleteEntry(${i})">🗑️ 刪除</button>
           </div>
         </div>
       `).join('');
@@ -538,6 +1064,7 @@
     function copyText(index) {
       const history = JSON.parse(localStorage.getItem("tarotHistory") || "[]");
       navigator.clipboard.writeText(history[index]);
+      showToast('已複製到剪貼簿！');
     }
 
     function deleteEntry(index) {
@@ -545,38 +1072,65 @@
       history.splice(index, 1);
       localStorage.setItem("tarotHistory", JSON.stringify(history));
       renderHistory(history);
+      showToast('紀錄已刪除');
     }
 
     function copyResult() {
+      if (!lastResult) {
+        showToast('尚無結果可複製');
+        return;
+      }
       navigator.clipboard.writeText(lastResult);
+      showToast('已複製到剪貼簿！');
     }
 
-    // Theme toggle
+    // 主題切換
     function toggleTheme() {
       document.body.classList.toggle('light-mode');
       const isLight = document.body.classList.contains('light-mode');
       localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      showToast(isLight ? '已切換至淺色主題' : '已切換至深色主題');
     }
 
-    // Share result as image
+    // 分享結果為圖片
     function shareAsImage() {
-      if (!lastResult) return;
-      // 計算文字行數與高度
+      if (!lastResult) {
+        showToast('請先抽牌再分享');
+        return;
+      }
+
+      showToast('正在生成圖片...');
+
       const lines = lastResult.split('\n');
-      const lineHeight = 22;
-      const textHeight = lines.length * lineHeight + 20;
-      const rows = lastSelectedCards.length > 5 ? 2 : 1;
-      const isCeltic = lastSelectedCards.length === 10;
-      const baseCardHeight = isCeltic ? 160 : 130;
-      const height = Math.max(400, textHeight + rows * baseCardHeight + 30);
-      const width = isCeltic ? 800 : 600;
+      const lineHeight = 24;
+      const textHeight = lines.length * lineHeight + 40;
+      const count = lastSelectedCards.length;
+      const isCeltic = count === 10;
+
+      // 計算畫布大小
+      let canvasWidth, canvasHeight, cardWidth, cardHeight;
+
+      if (isCeltic) {
+        canvasWidth = 700;
+        cardWidth = 80;
+        cardHeight = 120;
+        canvasHeight = textHeight + 520;
+      } else {
+        const rows = count > 5 ? 2 : 1;
+        cardWidth = 100;
+        cardHeight = 150;
+        canvasWidth = Math.max(600, count <= 5 ? count * (cardWidth + 15) + 40 : 5 * (cardWidth + 15) + 40);
+        canvasHeight = textHeight + rows * (cardHeight + 30) + 40;
+      }
+
       const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       const ctx = canvas.getContext('2d');
+
       // 背景漸層
       const isLight = document.body.classList.contains('light-mode');
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
       if (isLight) {
         gradient.addColorStop(0, '#ffffff');
         gradient.addColorStop(1, '#dde6f0');
@@ -585,102 +1139,139 @@
         gradient.addColorStop(1, '#1f2b3a');
       }
       ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // 繪製文字
       ctx.fillStyle = isLight ? '#232f45' : '#e0e6ed';
-      ctx.font = '16px Segoe UI';
-      // 繪製文字水平置中
+      ctx.font = '16px "Segoe UI", "Noto Sans TC", sans-serif';
+      ctx.textAlign = 'center';
+
       let y = 30;
       lines.forEach(line => {
-        const textWidth = ctx.measureText(line).width;
-        const x = (width - textWidth) / 2;
-        ctx.fillText(line, x, y);
+        ctx.fillText(line, canvasWidth / 2, y);
         y += lineHeight;
       });
-      // 載入牌面圖片
+
+      // 載入並繪製牌面圖片
       const promises = lastSelectedCards.map(card => new Promise(resolve => {
         const img = new Image();
+        img.crossOrigin = 'anonymous';
         img.src = 'images/thoth/' + encodeURIComponent(card) + '.jpg';
         img.onload = () => resolve(img);
         img.onerror = () => resolve(null);
       }));
+
       Promise.all(promises).then(imgs => {
-        const count = lastSelectedCards.length;
-        if (rows === 2) {
-          const perRow = (count === 10) ? 5 : Math.ceil(count / 2);
-          const baseCardWidth = isCeltic ? 100 : 80;
-          // 上排
-          const cardWidthTop = Math.min(baseCardWidth, (width - 40) / perRow - 8);
-          const totalTopWidth = perRow * cardWidthTop + (perRow - 1) * 8;
-          const xStartTop = (width - totalTopWidth) / 2;
-          const yTop = height - baseCardHeight * 2 - 10;
-          // 下排
-          const remaining = count - perRow;
-          const cardWidthBottom = Math.min(baseCardWidth, (width - 40) / remaining - 8);
-          const totalBottomWidth = remaining * cardWidthBottom + (remaining - 1) * 8;
-          const xStartBottom = (width - totalBottomWidth) / 2;
-          const yBottom = height - baseCardHeight - 10;
+        const startY = textHeight + 20;
+
+        if (isCeltic) {
+          // 聖十字佈局 - 模擬傳統排列
+          const positions = [
+            { x: 2, y: 1 }, // 1: 現況
+            { x: 2, y: 1, rotate: true }, // 2: 挑戰（橫放）
+            { x: 2, y: 2 }, // 3: 潛在原因
+            { x: 1, y: 1 }, // 4: 過去
+            { x: 2, y: 0 }, // 5: 可能未來
+            { x: 3, y: 1 }, // 6: 近期未來
+            { x: 4.5, y: 3 }, // 7: 自身態度
+            { x: 4.5, y: 2 }, // 8: 環境看法
+            { x: 4.5, y: 1 }, // 9: 希望/恐懼
+            { x: 4.5, y: 0 }  // 10: 最終結果
+          ];
+
+          const cellW = cardWidth + 10;
+          const cellH = cardHeight + 10;
+          const offsetX = (canvasWidth - 5.5 * cellW) / 2;
+
           imgs.forEach((img, i) => {
             if (!img) return;
-            if (i < perRow) {
-              const xPos = xStartTop + i * (cardWidthTop + 8);
-              ctx.drawImage(img, xPos, yTop, cardWidthTop, baseCardHeight);
+            const pos = positions[i];
+            const x = offsetX + pos.x * cellW;
+            const y = startY + pos.y * cellH;
+
+            if (pos.rotate) {
+              ctx.save();
+              ctx.translate(x + cardWidth/2, y + cardHeight/2);
+              ctx.rotate(Math.PI / 2);
+              ctx.drawImage(img, -cardWidth/2 * 0.8, -cardHeight/2 * 0.8, cardWidth * 0.8, cardHeight * 0.8);
+              ctx.restore();
             } else {
-              const j = i - perRow;
-              const xPos = xStartBottom + j * (cardWidthBottom + 8);
-              ctx.drawImage(img, xPos, yBottom, cardWidthBottom, baseCardHeight);
+              ctx.drawImage(img, x, y, cardWidth, cardHeight);
             }
           });
         } else {
-          const baseCardWidth = isCeltic ? 100 : 80;
-          const cardWidth = Math.min(baseCardWidth, (width - 40) / count - 8);
-          const totalWidth = count * cardWidth + (count - 1) * 8;
-          const xStart = (width - totalWidth) / 2;
-          const yOffset = height - baseCardHeight - 10;
+          // 一般佈局
+          const rows = count > 5 ? 2 : 1;
+          const perRow = rows === 2 ? Math.ceil(count / 2) : count;
+
           imgs.forEach((img, i) => {
             if (!img) return;
-            const xPos = xStart + i * (cardWidth + 8);
-            ctx.drawImage(img, xPos, yOffset, cardWidth, baseCardHeight);
+            const row = Math.floor(i / perRow);
+            const col = i % perRow;
+            const rowCount = row === 0 ? Math.min(perRow, count) : count - perRow;
+            const totalWidth = rowCount * cardWidth + (rowCount - 1) * 15;
+            const xStart = (canvasWidth - totalWidth) / 2;
+            const x = xStart + col * (cardWidth + 15);
+            const y = startY + row * (cardHeight + 30);
+            ctx.drawImage(img, x, y, cardWidth, cardHeight);
           });
         }
-        // 匯出圖檔
+
+        // 加入浮水印
+        ctx.fillStyle = isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
+        ctx.font = '12px "Segoe UI"';
+        ctx.textAlign = 'right';
+        ctx.fillText('托特塔羅抽牌器', canvasWidth - 15, canvasHeight - 10);
+
+        // 匯出
         const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.href = dataUrl;
-        link.download = 'tarot_result.png';
+        link.download = `tarot_${new Date().toISOString().slice(0,10)}.png`;
         link.click();
+        showToast('圖片已下載！');
       });
     }
 
-    // 重置輸入與結果
+    // 重置
     function resetAll() {
       document.getElementById('question').value = '';
       lastResult = '';
       lastSelectedCards = [];
+      lastLabels = [];
       resultDiv.innerText = '';
       imagesDiv.innerHTML = '';
+      imagesDiv.className = '';
+      showToast('已清空');
     }
 
     // 清空歷史紀錄
     function clearHistory() {
+      if (!confirm('確定要清空所有歷史紀錄嗎？')) return;
       localStorage.removeItem('tarotHistory');
       renderHistory([]);
+      showToast('歷史紀錄已清空');
     }
 
     // 下載歷史紀錄
     function downloadHistory() {
       const history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
-      if (!history.length) return;
-      const content = history.join('\n\n---\n\n');
+      if (!history.length) {
+        showToast('沒有紀錄可下載');
+        return;
+      }
+      const content = history.join('\n\n' + '═'.repeat(50) + '\n\n');
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'tarot_history.txt';
+      a.download = `tarot_history_${new Date().toISOString().slice(0,10)}.txt`;
       a.click();
       URL.revokeObjectURL(url);
+      showToast('紀錄已下載');
     }
 
-    // Prompt management
+    // 常用問題管理
     function loadPrompts() {
       savedPrompts = JSON.parse(localStorage.getItem('tarotPrompts') || '[]');
       renderPrompts();
@@ -694,16 +1285,23 @@
         localStorage.setItem('tarotPrompts', JSON.stringify(savedPrompts));
         input.value = '';
         renderPrompts();
+        showToast('問題已儲存');
       }
     }
 
     function renderPrompts() {
-      const list = savedPrompts.map((q, idx) => `<li><span onclick="setPrompt(${idx})">${q}</span> <button class="small-btn" onclick="deletePrompt(${idx})">刪除</button></li>`).join('');
+      const list = savedPrompts.map((q, idx) =>
+        `<li>
+          <span onclick="setPrompt(${idx})">${q}</span>
+          <button class="small-btn" onclick="deletePrompt(${idx})">刪除</button>
+        </li>`
+      ).join('');
       document.getElementById('promptList').innerHTML = list;
     }
 
     function setPrompt(idx) {
       document.getElementById('question').value = savedPrompts[idx];
+      showToast('已填入問題');
     }
 
     function deletePrompt(idx) {
@@ -712,18 +1310,33 @@
       renderPrompts();
     }
 
-    // Onload: restore history, prompts, theme, and update spread description
+    // 鍵盤快捷鍵
+    document.addEventListener('keydown', (e) => {
+      // ESC 關閉彈窗
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+      // Enter 在輸入框中按下時抽牌
+      if (e.key === 'Enter' && document.activeElement.id === 'question') {
+        drawSpread();
+      }
+    });
+
+    // 初始化
     window.onload = () => {
       const history = JSON.parse(localStorage.getItem('tarotHistory') || '[]');
       if (history.length > 0) renderHistory(history);
-      // restore theme
+
+      // 恢復主題
       const savedTheme = localStorage.getItem('theme');
       if (savedTheme === 'light') {
         document.body.classList.add('light-mode');
       }
-      // load prompts
+
+      // 載入常用問題
       loadPrompts();
-      // update description
+
+      // 更新牌陣說明
       updateSpreadDescription();
     }
   </script>
